@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 4,
-  "updatedAt": "2026-06-21T21:05:00.145Z",
+  "configVersion": 5,
+  "updatedAt": "2026-06-21T21:17:37.764Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
@@ -30,7 +30,7 @@
       "status": "active",
       "maintenanceMessage": "In manutenzione. Torniamo subito",
       "banner": {
-        "enabled": true,
+        "enabled": false,
         "text": "Ciao!!",
         "imageUrl": ""
       }
