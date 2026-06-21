@@ -93,7 +93,7 @@ object FloatingHomeButton {
                     MotionEvent.ACTION_UP -> {
                         if (!dragged) {
                             v.performClick()
-                            returnToLauncher(ctx)
+                            returnToGrid(ctx)
                         }
                     }
                 }
@@ -115,9 +115,11 @@ object FloatingHomeButton {
         view = null
     }
 
-    private fun returnToLauncher(context: Context) {
-        val intent = Intent(context, MainActivity::class.java)
+    /** Brings the launcher grid back to the foreground. Shared by the floating button and the
+     *  session-limit timer. */
+    fun returnToGrid(context: Context) {
+        val intent = Intent(context.applicationContext, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        runCatching { context.startActivity(intent) }
+        runCatching { context.applicationContext.startActivity(intent) }
     }
 }

@@ -151,7 +151,8 @@
     <!-- KIOSK -->
     <div class="card">
       <h2>5 · Kiosk e protezioni</h2>
-      <p class="hint">PIN dell'area genitori, ritorno automatico e limiti (alcuni in arrivo lato app).</p>
+      <p class="hint">PIN dell'area genitori, ritorno automatico e limite di sessione per i giochi.
+        (Volume e luminosità: in arrivo lato app.)</p>
       <div class="row">
         <label class="field"><span>PIN uscita area genitori</span><input type="text" id="f-exitPin" /></label>
         <label class="field"><span>Auto-launch (package singolo gioco)</span><input type="text" id="f-autoLaunch" placeholder="vuoto = griglia" /></label>
@@ -405,7 +406,8 @@ function renderGames(){
     const fIcon=fieldInput("URL icona", g.iconUrl);
     const fCat=fieldInput("Categoria", g.category);
     const fOrder=fieldInput("Ordine", g.order ?? 0, {type:"number"});
-    r2.append(fIcon,fCat,fOrder); box.appendChild(r2);
+    const fLimit=fieldInput("Limite sessione (s, 0=usa globale)", g.sessionLimitSeconds ?? 0, {type:"number"});
+    r2.append(fIcon,fCat,fOrder,fLimit); box.appendChild(r2);
     const r3=document.createElement("div"); r3.style.marginTop="6px";
     const fVis=fieldInput("", g.visible!==false, {type:"checkbox"});
     fVis.style.display="inline-flex"; fVis.style.gap="6px"; fVis.querySelector("span").textContent="";
@@ -416,7 +418,7 @@ function renderGames(){
       id:fId.__input.value.trim(), package:fPkg.__input.value.trim()||null,
       displayName:fName.__input.value.trim()||null, iconUrl:fIcon.__input.value.trim()||null,
       category:fCat.__input.value.trim()||null, order:Number(fOrder.__input.value)||0,
-      visible:fVis.__input.checked, sessionLimitSeconds:g.sessionLimitSeconds||0
+      visible:fVis.__input.checked, sessionLimitSeconds:Number(fLimit.__input.value)||0
     });
     wrap.appendChild(box);
   });

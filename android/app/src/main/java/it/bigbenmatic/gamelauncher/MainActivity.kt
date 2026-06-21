@@ -82,8 +82,9 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         hideSystemBars()
         KioskManager.engage(this)
-        // Back on the grid: the floating "back to games" button is no longer needed.
+        // Back on the grid: the floating "back to games" button and the session timer are done.
         FloatingHomeButton.hide(this)
+        SessionTimer.cancel()
         resumeTick.value++
         interactionTick.value = android.os.SystemClock.elapsedRealtime()
     }
@@ -199,6 +200,10 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
                             // Show the floating "back to games" button on top of the game so the
                             // child can always return to the grid (even in kiosk, where Home is blocked).
                             FloatingHomeButton.show(context)
+                            // Start the session limit: a per-game limit (if set) wins over the global one.
+                            val perGame = config?.games?.firstOrNull { it.packageName == pkg }?.sessionLimitSeconds ?: 0
+                            val limit = if (perGame > 0) perGame else (config?.kiosk?.sessionLimitSeconds ?: 0)
+                            SessionTimer.start(context, limit)
                         } else {
                             Toast.makeText(context, "Gioco non disponibile", Toast.LENGTH_SHORT).show()
                             refreshApps()

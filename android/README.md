@@ -8,27 +8,77 @@ App Android pensata per essere installata su un monitor/tablet Android collocato
 - Perché Android torna da solo alla griglia: quando l'app launcher è quella predefinita, la sua Activity resta in fondo allo stack. Quando il gioco lanciato viene chiuso (back ripetuto, uscita dal gioco, crash) o quando si preme il tasto Home, il sistema riporta automaticamente in primo piano la nostra schermata, senza bisogno di codice aggiuntivo.
 - Nessuna icona di altre app o barra di sistema è visibile: l'interfaccia è a schermo intero (immersive mode).
 
-## Modalità Kiosk (uscita bloccata) — consigliata per il tablet del parco
+## Modalità Kiosk (Device Owner) — guida passo-passo
 
-Per impedire davvero ai bambini di uscire dall'app (niente Home, niente Recenti, niente barra delle notifiche, nessun'altra app apribile a parte i giochi selezionati), l'app sfrutta la **Lock Task Mode** di Android, attivabile registrando l'app come **Device Owner** del tablet. È una procedura *una tantum*, da fare una volta sola su un tablet dedicato solo a questo uso (non un telefono personale).
+Per bloccare davvero il tablet sull'app (niente Home, niente Recenti, niente barra
+notifiche, nessun'altra app apribile a parte i giochi scelti), l'app va registrata come
+**Device Owner** del tablet, che abilita la **Lock Task Mode** di Android. Questo sblocca anche
+l'**installazione remota silenziosa degli APK** (i `managedApps` dal pannello). È una procedura
+**una tantum**, su un tablet **dedicato solo a questo uso**.
 
-Requisiti: il tablet deve essere **senza nessun account Google configurato** (va fatto su un dispositivo nuovo o dopo un reset alle impostazioni di fabbrica, saltando la configurazione dell'account durante il setup iniziale), con il debug USB attivo e collegato a un PC con `adb`.
+### Prerequisiti (importante)
 
-Procedura:
+- Un **tablet dedicato**, **senza nessun account Google** configurato. Se ne ha già uno, serve un
+  **reset alle impostazioni di fabbrica** e, durante la configurazione iniziale, **saltare**
+  l'aggiunta dell'account Google. Questo è il motivo di errore più comune: il comando fallisce se
+  esiste anche un solo account.
+- Un **PC** (Windows/Mac/Linux) con **ADB** installato — fa parte degli
+  [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools)
+  (scarica lo zip, estrai, e da quella cartella esegui i comandi `adb`).
+- Un **cavo USB** dati.
 
-1. Sul tablet: Impostazioni > Info sul telefono > tocca 7 volte "Numero build" per attivare le Opzioni sviluppatore, poi Impostazioni > Sistema > Opzioni sviluppatore > attiva "Debug USB".
-2. Collega il tablet al PC via USB e autorizza il debug quando richiesto.
-3. Installa l'app (se non già installata): `adb install app-debug.apk`.
-4. Imposta l'app come Device Owner:
+### Passaggi
+
+1. **Attiva le Opzioni sviluppatore sul tablet**: Impostazioni → *Info sul telefono/tablet* →
+   tocca **7 volte** "Numero build" finché compare "Sei uno sviluppatore".
+2. **Attiva il Debug USB**: Impostazioni → Sistema → Opzioni sviluppatore → **Debug USB** → ON.
+3. **Collega** il tablet al PC via USB e, sul tablet, **autorizza** la richiesta di debug
+   ("Consenti debug USB?" → Consenti).
+4. **Verifica la connessione** dal PC:
+   ```
+   adb devices
+   ```
+   Deve elencare un dispositivo con stato `device` (se dice `unauthorized`, riguarda il popup sul tablet).
+5. **Installa l'app** (o aggiornala):
+   ```
+   adb install -r app-debug.apk
+   ```
+6. **Registra l'app come Device Owner**:
    ```
    adb shell dpm set-device-owner it.bigbenmatic.gamelauncher/.DeviceOwnerReceiver
    ```
-5. Apri l'app: la schermata Impostazioni (PIN) mostrerà "Modalità Kiosk: ATTIVA". Da quel momento il tablet resta bloccato sull'app e sui giochi selezionati.
-6. Per fare manutenzione (es. installare nuovi giochi dal Play Store), apri le Impostazioni dell'app col PIN e tocca **"Sblocca temporaneamente"**: questo sospende il blocco finché non si rientra nell'app.
+   Deve rispondere **`Success: Device owner set...`**.
+7. **(Consigliato) Concedi il permesso per il pulsante "Torna ai giochi" flottante**, così
+   funziona dentro il kiosk senza passare dalle impostazioni:
+   ```
+   adb shell appops set it.bigbenmatic.gamelauncher SYSTEM_ALERT_WINDOW allow
+   ```
+8. **Apri l'app**: nella schermata Impostazioni (tieni premuta l'icona ⚙️ → PIN) vedrai la
+   modalità kiosk attiva. Da ora il tablet resta bloccato sull'app e sui giochi consentiti.
 
-> Se il comando `set-device-owner` fallisce con "not allowed" significa che sul dispositivo è già presente un account o un altro profilo: serve un reset di fabbrica e ripetere la procedura prima di aggiungere account.
+### Manutenzione
 
-Senza questa configurazione, l'app funziona comunque come launcher predefinito a schermo intero (buona protezione per l'uso quotidiano), ma un utente esperto potrebbe comunque raggiungere le impostazioni di sistema tramite le scorciatoie del produttore del tablet.
+- Per installare giochi dal Play Store o cambiare impostazioni di sistema: apri l'area genitori
+  col PIN e usa **"Sblocca temporaneamente"** (sospende il blocco finché non rientri nell'app).
+- I giochi che ospiti tu (APK) puoi installarli **da remoto** dal pannello, sezione
+  *App da installare* (`managedApps`), senza toccare il tablet.
+
+### Risoluzione problemi
+
+- **`set-device-owner` → "not allowed..." / "already has an account"**: sul tablet esiste un
+  account o un profilo. Fai un **reset di fabbrica**, salta l'account durante il setup, e ripeti
+  dal passo 1.
+- **`adb` non riconosciuto**: stai eseguendo il comando fuori dalla cartella *platform-tools*
+  (oppure ADB non è nel PATH).
+- **Rimuovere il Device Owner** (per dismettere il tablet):
+  ```
+  adb shell dpm remove-active-admin it.bigbenmatic.gamelauncher/.DeviceOwnerReceiver
+  ```
+
+> Senza Device Owner l'app funziona comunque come **launcher predefinito a schermo intero** (buona
+> protezione per l'uso quotidiano: si torna ai giochi col tasto Home), ma un utente esperto
+> potrebbe raggiungere le impostazioni di sistema, e l'**installazione remota degli APK non è
+> disponibile** (richiede i privilegi di Device Owner).
 
 ## Configurazione dei giochi (per il gestore/genitore)
 
@@ -178,11 +228,19 @@ posto.
   schermata diversa dalla griglia (Impostazioni/PIN/Diagnostica), l'app torna automaticamente
   alla griglia pulita. Non disturba né la griglia né un gioco in corso (mentre un gioco è in
   primo piano, il launcher è in HOME dietro di esso). Imposta `0` per disattivarlo.
-- `sessionLimitSeconds`, `maxVolumePercent`, `brightnessPercent` sono letti dalla config e
-  disponibili nel modello dati, ma il loro enforcement attivo (limite sessione, controllo
-  volume/luminosità) non è ancora cablato: predisposto, da completare in un secondo momento.
+- `sessionLimitSeconds` è **attivo** (`SessionTimer`): quando un gioco viene aperto parte un
+  conto alla rovescia; allo scadere il launcher torna in primo piano, terminando la sessione.
+  Vale il limite **per-gioco** (`games[].sessionLimitSeconds`) se impostato, altrimenti quello
+  **globale** (`kiosk.sessionLimitSeconds`); `0` = nessun limite. Tutto regolabile da remoto dal
+  pannello.
+- **Pulsante "Torna ai giochi" flottante** (`FloatingHomeButton`): un overlay sopra i giochi che
+  riporta alla griglia con un tocco (trascinabile). Indispensabile in kiosk, dove Home/Back sono
+  bloccati. Richiede il permesso "Mostra sopra le altre app" (vedi passo 7 della guida Device
+  Owner, oppure il pulsante dedicato nella schermata Diagnostica).
+- `maxVolumePercent`, `brightnessPercent` sono letti dalla config e nel modello dati, ma il loro
+  enforcement attivo (volume/luminosità) non è ancora cablato: predisposto, da completare.
 
 ## Possibili estensioni future (non incluse)
 
-- Enforcement di limite sessione, volume e luminosità da config.
+- Enforcement di volume massimo e luminosità da config.
 - Alert Telegram lato Apps Script per monitor offline/crash.
