@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 2,
-  "updatedAt": "2026-06-21T20:32:59.091Z",
+  "configVersion": 3,
+  "updatedAt": "2026-06-21T21:00:13.630Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
@@ -27,11 +27,11 @@
       "autoLaunchPackage": null
     },
     "operational": {
-      "status": "active",
-      "maintenanceMessage": "",
+      "status": "maintenance",
+      "maintenanceMessage": "In manutenzione. Torniamo subito",
       "banner": {
-        "enabled": false,
-        "text": "",
+        "enabled": true,
+        "text": "Ciao!!",
         "imageUrl": ""
       }
     },
@@ -87,7 +87,7 @@
       }
     ],
     "telemetry": {
-      "enabled": true,
+      "enabled": false,
       "reportUrl": "https://script.google.com/macros/s/XXXX/exec",
       "reportIntervalMinutes": 30,
       "heartbeatIntervalMinutes": 5,
