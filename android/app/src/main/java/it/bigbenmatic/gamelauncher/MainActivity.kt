@@ -1,6 +1,9 @@
 package it.bigbenmatic.gamelauncher
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -79,6 +82,8 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         hideSystemBars()
         KioskManager.engage(this)
+        // Back on the grid: the floating "back to games" button is no longer needed.
+        FloatingHomeButton.hide(this)
         resumeTick.value++
         interactionTick.value = android.os.SystemClock.elapsedRealtime()
     }
@@ -190,7 +195,11 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
                     branding = config?.branding,
                     onPlay = { pkg ->
                         fleetApp.telemetryManager.recordGameLaunch(pkg)
-                        if (!InstalledAppsRepository.launch(context, pkg)) {
+                        if (InstalledAppsRepository.launch(context, pkg)) {
+                            // Show the floating "back to games" button on top of the game so the
+                            // child can always return to the grid (even in kiosk, where Home is blocked).
+                            FloatingHomeButton.show(context)
+                        } else {
                             Toast.makeText(context, "Gioco non disponibile", Toast.LENGTH_SHORT).show()
                             refreshApps()
                         }
@@ -657,6 +666,31 @@ private fun DiagnosticsScreen(
             if (wifiSaved) {
                 Spacer(Modifier.width(12.dp))
                 Text("Salvata ✓", color = Color(0xFF2E7D32), fontWeight = FontWeight.SemiBold)
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+        Text("Pulsante \"Torna ai giochi\" flottante", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = "Mostra un pulsante sopra i giochi per tornare alla griglia in qualsiasi momento " +
+                "(indispensabile in modalità kiosk, dove il tasto Home è bloccato). Richiede il " +
+                "permesso \"Mostra sopra le altre app\".",
+            fontSize = 12.sp,
+            color = Color.Gray,
+        )
+        Spacer(Modifier.height(8.dp))
+        val overlayOk = FloatingHomeButton.canDraw(context)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (overlayOk) {
+                Text("Permesso attivo ✓", color = Color(0xFF2E7D32), fontWeight = FontWeight.SemiBold)
+            } else {
+                Button(onClick = {
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + context.packageName),
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(intent) }
+                }) { Text("Attiva permesso") }
             }
         }
 
