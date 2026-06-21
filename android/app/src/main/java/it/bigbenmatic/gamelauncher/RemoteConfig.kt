@@ -57,6 +57,17 @@ data class UpdateInfo(
     val silentInstall: Boolean = false,
 )
 
+/** A third-party APK the fleet should keep installed (or removed) on a device, fetched and
+ * installed silently under Device Owner. Used both for games hosted by us and for any other
+ * APK an operator wants pushed to the monitors. */
+data class ManagedApp(
+    val packageName: String,
+    val apkUrl: String?,
+    val versionCode: Int = 0,   // 0 = install only if missing; >0 = (re)install when installed < this
+    val sha256: String? = null, // optional integrity check (recommended: config.json is public)
+    val action: String = "install", // "install" | "uninstall"
+)
+
 data class WifiNetwork(
     val ssid: String,
     val password: String?,
@@ -84,6 +95,7 @@ data class ResolvedConfig(
     val operational: Operational,
     val games: List<RemoteGame>,
     val update: UpdateInfo,
+    val managedApps: List<ManagedApp>,
     val telemetry: TelemetryConfig,
     val wifiNetworks: List<WifiNetwork>,
 )
@@ -114,6 +126,9 @@ object RemoteConfigParser {
             mergeObjects(defaults.optJSONObject("operational"), deviceOverride?.optJSONObject("operational"))
         )
         val update = parseUpdate(defaults.optJSONObject("update"))
+        val managedApps = mergeManagedApps(
+            defaults.optJSONArray("managedApps"), deviceOverride?.optJSONArray("managedApps")
+        )
         val telemetry = parseTelemetry(defaults.optJSONObject("telemetry"))
         val games = mergeGames(defaults.optJSONArray("games"), deviceOverride?.optJSONArray("games"))
         val wifiNetworks = parseWifi(
@@ -131,6 +146,7 @@ object RemoteConfigParser {
             operational = operational,
             games = games,
             update = update,
+            managedApps = managedApps,
             telemetry = telemetry,
             wifiNetworks = wifiNetworks,
         )
@@ -248,6 +264,37 @@ object RemoteConfigParser {
                 sessionLimitSeconds = g.optInt("sessionLimitSeconds", 0),
             )
         }.sortedBy { it.order }
+    }
+
+    /** Merges managed-app entries by `packageName`: per-device entries patch the defaults,
+     * mirroring the games merge rule. */
+    private fun mergeManagedApps(defaultApps: JSONArray?, overrideApps: JSONArray?): List<ManagedApp> {
+        val base = linkedMapOf<String, JSONObject>()
+        if (defaultApps != null) {
+            for (i in 0 until defaultApps.length()) {
+                val a = defaultApps.getJSONObject(i)
+                val pkg = a.optString("packageName")
+                if (pkg.isNotBlank()) base[pkg] = a
+            }
+        }
+        if (overrideApps != null) {
+            for (i in 0 until overrideApps.length()) {
+                val patch = overrideApps.getJSONObject(i)
+                val pkg = patch.optString("packageName")
+                if (pkg.isBlank()) continue
+                base[pkg] = mergeObjects(base[pkg], patch)
+            }
+        }
+        return base.values.mapNotNull { a ->
+            val pkg = a.optStringOrNull("packageName") ?: return@mapNotNull null
+            ManagedApp(
+                packageName = pkg,
+                apkUrl = a.optStringOrNull("apkUrl"),
+                versionCode = a.optInt("versionCode", 0),
+                sha256 = a.optStringOrNull("sha256"),
+                action = a.optString("action", "install"),
+            )
+        }
     }
 
     private fun JSONObject.optStringOrNull(key: String): String? =

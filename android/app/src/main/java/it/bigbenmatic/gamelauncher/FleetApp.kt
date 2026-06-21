@@ -43,11 +43,57 @@ class FleetApp : Application() {
         if (all.isNotEmpty()) WifiProvisioner.apply(this, all)
     }
 
+    /**
+     * Installs / updates / removes APKs declared in the config (Module: remote app delivery).
+     * Silent installs require Device Owner, so this is a no-op otherwise — without it the
+     * system would need a user prompt that the kiosk blocks anyway. Idempotent: it only acts
+     * when a package is missing or older than requested, so it is safe to run every poll.
+     */
+    private fun applyManagedApps() {
+        if (!KioskManager.isDeviceOwner(this)) return
+        val config = configRepository.config.value ?: return
+
+        for (app in config.managedApps) {
+            if (app.action == "uninstall") {
+                if (isInstalled(app.packageName)) ApkInstaller.uninstall(this, app.packageName)
+            } else {
+                val url = app.apkUrl ?: continue
+                if (needsInstall(app.packageName, app.versionCode)) {
+                    ApkInstaller.installFromUrl(this, url, app.sha256)
+                }
+            }
+        }
+
+        // Self-update of the launcher itself, driven by `defaults.update`.
+        val update = config.update
+        if (update.silentInstall && !update.apkUrl.isNullOrBlank() &&
+            update.latestVersionCode > currentVersionCode()
+        ) {
+            ApkInstaller.installFromUrl(this, update.apkUrl, null)
+        }
+    }
+
+    private fun installedVersionCode(pkg: String): Int? = runCatching {
+        @Suppress("DEPRECATION")
+        packageManager.getPackageInfo(pkg, 0).versionCode
+    }.getOrNull()
+
+    private fun isInstalled(pkg: String): Boolean = installedVersionCode(pkg) != null
+
+    /** Missing package -> install. Present package -> reinstall only if a newer versionCode is requested. */
+    private fun needsInstall(pkg: String, targetVersion: Int): Boolean {
+        val installed = installedVersionCode(pkg) ?: return true
+        return targetVersion > 0 && installed < targetVersion
+    }
+
+    private fun currentVersionCode(): Int = installedVersionCode(packageName) ?: 0
+
     private fun startConfigPollingLoop() {
         scope.launch {
             while (true) {
                 runCatching { configRepository.refresh() }
                 runCatching { applyWifi() }
+                runCatching { applyManagedApps() }
                 val minutes = configRepository.config.value?.pollIntervalMinutes?.takeIf { it > 0 } ?: 15
                 delay(minutes * 60_000L)
             }

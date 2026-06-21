@@ -154,11 +154,26 @@ posto.
 - La allow-list del lock task (`setLockTaskPackages`) viene tenuta sincronizzata con i giochi
   effettivamente mostrati (remoti o locali), così i giochi gestiti da remoto restano lanciabili
   dentro il kiosk.
-- **Aggiornamento APK silenzioso** (`update.apkUrl`/`silentInstall`): lo schema è già previsto
-  nel `config.json`, ma l'installazione silenziosa via `PackageInstaller` sotto device-owner
-  **non è ancora implementata** in questa versione — è il punto più delicato (rischio di
-  rompere il kiosk se gestito male) e va aggiunto e testato a parte. Per ora gli aggiornamenti
-  dell'app si fanno via ADB. Questo è l'unico scostamento dallo schema fornito.
+- **Installazione/aggiornamento APK silenzioso** via `PackageInstaller` sotto device-owner:
+  **implementato** (`ApkInstaller`, `InstallResultReceiver`). Quando l'app è Device Owner gli
+  APK vengono scaricati e installati/aggiornati senza alcun popup, quindi anche con il kiosk
+  attivo. Due usi:
+  - **Auto-update del launcher** — `defaults.update` (`latestVersionCode`/`apkUrl`/`silentInstall`):
+    se `silentInstall` è `true` e `latestVersionCode` è maggiore della versione installata, il
+    launcher si aggiorna da solo al poll successivo.
+  - **App/giochi gestiti** — `defaults.managedApps` (o override per dispositivo): lista di APK che
+    la flotta deve tenere installati o rimuovere. Ogni voce: `packageName`, `apkUrl`,
+    `versionCode` (0 = installa solo se assente; >0 = reinstalla quando l'installato è più vecchio),
+    `sha256` (opzionale ma consigliato: `config.json` è pubblico) e `action` (`install` |
+    `uninstall`). I pacchetti gestiti installati vengono aggiunti automaticamente alla allow-list
+    del lock task, così restano lanciabili dentro il kiosk.
+  - **Installazione manuale al volo**: dalla schermata Diagnostica (protetta da PIN) c'è un campo
+    "Installa app (APK da URL)" per provare un APK senza PC e senza aspettare il poll.
+
+  > I **titoli del Play Store** non si possono "spingere" da remoto (servirebbe Managed Google
+  > Play/EMM): vanno installati una volta sul posto sbloccando temporaneamente il kiosk, poi si
+  > gestiscono da remoto. Il meccanismo `managedApps` riguarda **APK ospitati da noi** (es. su
+  > GitHub Pages in `launcher/apk/`) o forniti dall'operatore.
 - `idleTimeoutSeconds` è **attivo**: dopo quel numero di secondi senza interazioni su una
   schermata diversa dalla griglia (Impostazioni/PIN/Diagnostica), l'app torna automaticamente
   alla griglia pulita. Non disturba né la griglia né un gioco in corso (mentre un gioco è in
@@ -170,5 +185,4 @@ posto.
 ## Possibili estensioni future (non incluse)
 
 - Enforcement di limite sessione, volume e luminosità da config.
-- Installazione APK silenziosa via `PackageInstaller` sotto device-owner.
 - Alert Telegram lato Apps Script per monitor offline/crash.

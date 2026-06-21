@@ -39,6 +39,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -137,8 +140,14 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
         allApps.filter { it.packageName in selectedPackages }
     }
 
-    // Keep the kiosk allow-list in sync with whatever is actually playable right now.
-    val allowedPackages = if (usingRemoteGames) remoteGames.mapNotNull { it.packageName }.toSet() else selectedPackages
+    // Keep the kiosk allow-list in sync with whatever is actually playable right now. Remotely
+    // managed apps that are installed are added too, so games pushed via PackageInstaller are
+    // launchable inside the lock task even before they are listed under `games`.
+    val managedPackages = config?.managedApps.orEmpty()
+        .filter { it.action != "uninstall" && installedByPkg.containsKey(it.packageName) }
+        .map { it.packageName }.toSet()
+    val baseAllowed = if (usingRemoteGames) remoteGames.mapNotNull { it.packageName }.toSet() else selectedPackages
+    val allowedPackages = baseAllowed + managedPackages
     LaunchedEffect(allowedPackages) { KioskManager.syncAllowedPackages(context, allowedPackages) }
 
     // Single-game stations: boot straight into the configured package each time we land on Home.
@@ -650,6 +659,61 @@ private fun DiagnosticsScreen(
                 Text("Salvata ✓", color = Color(0xFF2E7D32), fontWeight = FontWeight.SemiBold)
             }
         }
+
+        Spacer(Modifier.height(24.dp))
+        val scope = rememberCoroutineScope()
+        val isDeviceOwner = remember { KioskManager.isDeviceOwner(context) }
+        var apkUrl by remember { mutableStateOf("") }
+        var installing by remember { mutableStateOf(false) }
+        var installStatus by remember { mutableStateOf<String?>(null) }
+
+        Text("Installa app (APK da URL)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = if (isDeviceOwner) {
+                "Scarica e installa un APK in modo silenzioso (questo dispositivo è Device Owner). " +
+                    "Utile per provare al volo un gioco o un aggiornamento senza PC. Per installare " +
+                    "a tutta la flotta, usa invece \"managedApps\" nel config.json."
+            } else {
+                "⚠ Questo dispositivo NON è Device Owner: l'installazione mostrerà la richiesta di " +
+                    "conferma di Android e funziona solo fuori dal kiosk."
+            },
+            fontSize = 12.sp,
+            color = Color.Gray,
+        )
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = apkUrl,
+            onValueChange = { apkUrl = it; installStatus = null },
+            label = { Text("URL del file .apk") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Button(
+                enabled = apkUrl.isNotBlank() && !installing,
+                onClick = {
+                    installing = true
+                    installStatus = "Download in corso…"
+                    scope.launch {
+                        val result = withContext(Dispatchers.IO) {
+                            ApkInstaller.installFromUrl(context, apkUrl.trim())
+                        }
+                        installing = false
+                        installStatus = if (result.isSuccess) {
+                            "Installazione avviata ✓"
+                        } else {
+                            "Errore: ${result.exceptionOrNull()?.message ?: "sconosciuto"}"
+                        }
+                    }
+                },
+            ) { Text(if (installing) "Attendere…" else "Installa") }
+            installStatus?.let {
+                Spacer(Modifier.width(12.dp))
+                Text(it, fontSize = 12.sp)
+            }
+        }
+
         Spacer(Modifier.height(24.dp))
     }
 }

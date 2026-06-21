@@ -59,6 +59,20 @@
       "apkUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/apk/launcher-latest.apk",
       "silentInstall": true
     },
+    "managedApps": [],
+    "_managedApps_esempio": [
+      {
+        "packageName": "com.example.kartracing",
+        "apkUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/apk/kartracing-3.apk",
+        "versionCode": 3,
+        "sha256": "metti-qui-lo-sha256-del-file-apk",
+        "action": "install"
+      },
+      {
+        "packageName": "com.example.vecchiogioco",
+        "action": "uninstall"
+      }
+    ],
     "telemetry": {
       "enabled": true,
       "reportUrl": "https://script.google.com/macros/s/XXXX/exec",
