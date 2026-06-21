@@ -18,6 +18,11 @@ colori pastello).
 - [`launcher/`](launcher/) — contenuti statici da pubblicare su **GitHub Pages**:
   - `config.json` — configurazione della flotta (defaults + override per
     `deviceId`); pubblica e quindi senza segreti veri.
+  - `admin.html` — **pannello di controllo web** per modificare `config.json` da
+    interfaccia grafica (moduli per giochi, branding, kiosk, manutenzione, Wi-Fi,
+    app da installare). Incrementa da solo `configVersion` e salva committando su
+    GitHub tramite un token personale (memorizzato solo nel browser).
+    URL: `https://kevodable.github.io/Fun-Planet-touch/launcher/admin.html`
   - `apps-script/Code.gs` — ricevitore di telemetria (Google Apps Script →
     Google Sheet), con istruzioni di deploy nel file stesso.
 

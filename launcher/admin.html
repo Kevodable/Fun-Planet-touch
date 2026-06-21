@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fun Planet · Pannello di controllo flotta</title>
+<style>
+  :root {
+    --primary: #3346D6;
+    --accent: #FDCE72;
+    --bg: #eef2fb;
+    --card: #ffffff;
+    --ok: #2e7d32;
+    --err: #c62828;
+    --muted: #6b7280;
+    --border: #d7def0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: #1f2433;
+  }
+  header {
+    background: linear-gradient(120deg, var(--primary), #5a6bf0);
+    color: #fff; padding: 18px 22px; display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { font-size: 20px; margin: 0; flex: 1; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 18px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .card h2 { margin: 0 0 4px; font-size: 17px; color: var(--primary); }
+  .card .hint { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
+  label.field { display: block; margin: 10px 0; font-size: 13px; color: #333; }
+  label.field span { display: block; margin-bottom: 4px; font-weight: 600; color: #444; }
+  input[type=text], input[type=number], input[type=password], textarea, select {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px;
+    font-size: 14px; font-family: inherit; background: #fff;
+  }
+  textarea { min-height: 70px; resize: vertical; font-family: ui-monospace, monospace; font-size: 12.5px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .row > * { flex: 1; min-width: 160px; }
+  .inline { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  button {
+    background: var(--primary); color: #fff; border: none; border-radius: 10px;
+    padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  button.ghost { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+  button.danger { background: #fff; color: var(--err); border: 1px solid var(--err); padding: 6px 12px; }
+  button.small { padding: 7px 12px; font-size: 13px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .listitem { border: 1px dashed var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; background: #fafbff; }
+  .listitem .top { display: flex; justify-content: flex-end; margin-bottom: -6px; }
+  .status { padding: 10px 14px; border-radius: 10px; font-size: 13.5px; margin: 10px 0; display: none; }
+  .status.show { display: block; }
+  .status.ok { background: #e6f4ea; color: var(--ok); }
+  .status.err { background: #fdecea; color: var(--err); }
+  .status.info { background: #e8eefc; color: var(--primary); }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  code { background: #eef; padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+  details summary { cursor: pointer; font-weight: 600; color: var(--primary); }
+  .ver { font-weight: 700; }
+  .save-bar {
+    position: sticky; bottom: 0; background: rgba(238,242,251,.95); backdrop-filter: blur(4px);
+    border-top: 1px solid var(--border); padding: 12px 0; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:22px">🎡</span>
+  <h1>Fun Planet · Pannello di controllo flotta</h1>
+</header>
+
+<div class="wrap">
+
+  <!-- CONNESSIONE -->
+  <div class="card">
+    <h2>1 · Connessione a GitHub</h2>
+    <p class="hint">
+      Serve una sola volta. Crea un <b>token fine-grained</b> su GitHub
+      (Settings → Developer settings → Fine-grained tokens), dai accesso al solo repository
+      <code>Fun-Planet-touch</code> con permesso <b>Contents: Read and write</b>, incollalo qui.
+      Il token resta salvato <b>solo in questo browser</b> (non viene mai pubblicato).
+    </p>
+    <div class="row">
+      <label class="field"><span>Proprietario (owner)</span>
+        <input type="text" id="gh-owner" value="Kevodable" /></label>
+      <label class="field"><span>Repository</span>
+        <input type="text" id="gh-repo" value="Fun-Planet-touch" /></label>
+      <label class="field"><span>Branch</span>
+        <input type="text" id="gh-branch" value="claude/great-meitner-1lluij" /></label>
+    </div>
+    <label class="field"><span>Token GitHub</span>
+      <input type="password" id="gh-token" placeholder="github_pat_..." /></label>
+    <div class="toolbar">
+      <button id="btn-load">Connetti e carica config</button>
+      <button class="ghost small" id="btn-forget">Dimentica token</button>
+      <span id="conn-info" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+    <div class="status" id="conn-status"></div>
+  </div>
+
+  <div id="editor" style="display:none">
+
+    <!-- GENERALE -->
+    <div class="card">
+      <h2>2 · Generale</h2>
+      <p class="hint">
+        La <b>versione</b> si incrementa da sola ad ogni salvataggio: è il segnale che dice ai
+        tablet di applicare le modifiche. Le modifiche arrivano entro il tempo di polling
+        oppure subito riavviando il tablet.
+      </p>
+      <div class="row">
+        <label class="field"><span>Versione config (automatica)</span>
+          <input type="text" id="f-configVersion" disabled /></label>
+        <label class="field"><span>Intervallo di controllo (minuti)</span>
+          <input type="number" id="f-poll" min="1" /></label>
+      </div>
+    </div>
+
+    <!-- BRANDING -->
+    <div class="card">
+      <h2>3 · Aspetto (branding)</h2>
+      <p class="hint">Titolo, logo, sfondo e colori mostrati ai bambini.</p>
+      <label class="field"><span>Titolo</span><input type="text" id="f-appTitle" /></label>
+      <div class="row">
+        <label class="field"><span>URL logo</span><input type="text" id="f-logoUrl" /></label>
+        <label class="field"><span>URL sfondo</span><input type="text" id="f-backgroundUrl" /></label>
+      </div>
+      <div class="row">
+        <label class="field"><span>Colore primario</span><input type="text" id="f-primaryColor" placeholder="#3346D6" /></label>
+        <label class="field"><span>Colore accento</span><input type="text" id="f-accentColor" placeholder="#FDCE72" /></label>
+        <label class="field"><span>Lingua</span><input type="text" id="f-language" placeholder="it" /></label>
+      </div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="card">
+      <h2>4 · Griglia (layout)</h2>
+      <div class="row">
+        <label class="field"><span>Colonne (0 = automatico)</span><input type="number" id="f-columns" min="0" /></label>
+        <label class="field"><span>Dimensione riquadri</span>
+          <select id="f-tileSize"><option value="small">piccoli</option><option value="large">grandi</option></select></label>
+      </div>
+      <label class="inline"><input type="checkbox" id="f-showLabels" /> Mostra le etichette sotto le icone</label>
+    </div>
+
+    <!-- KIOSK -->
+    <div class="card">
+      <h2>5 · Kiosk e protezioni</h2>
+      <p class="hint">PIN dell'area genitori, ritorno automatico e limiti (alcuni in arrivo lato app).</p>
+      <div class="row">
+        <label class="field"><span>PIN uscita area genitori</span><input type="text" id="f-exitPin" /></label>
+        <label class="field"><span>Auto-launch (package singolo gioco)</span><input type="text" id="f-autoLaunch" placeholder="vuoto = griglia" /></label>
+      </div>
+      <div class="row">
+        <label class="field"><span>Ritorno alla griglia dopo (secondi, 0 = off)</span><input type="number" id="f-idle" min="0" /></label>
+        <label class="field"><span>Limite sessione (secondi, 0 = off)</span><input type="number" id="f-session" min="0" /></label>
+      </div>
+      <div class="row">
+        <label class="field"><span>Volume massimo (%)</span><input type="number" id="f-volume" min="0" max="100" /></label>
+        <label class="field"><span>Luminosità (%)</span><input type="number" id="f-brightness" min="0" max="100" /></label>
+      </div>
+      <label class="inline"><input type="checkbox" id="f-kioskEnabled" /> Kiosk attivo</label>
+    </div>
+
+    <!-- OPERATIVO -->
+    <div class="card">
+      <h2>6 · Stato operativo</h2>
+      <p class="hint">Metti un monitor in manutenzione o mostra un banner promozionale.</p>
+      <label class="field"><span>Stato</span>
+        <select id="f-status"><option value="active">attivo</option><option value="maintenance">manutenzione</option></select></label>
+      <label class="field"><span>Messaggio di manutenzione</span><input type="text" id="f-maintMsg" /></label>
+      <label class="inline"><input type="checkbox" id="f-bannerEnabled" /> Banner attivo</label>
+      <div class="row">
+        <label class="field"><span>Testo banner</span><input type="text" id="f-bannerText" /></label>
+        <label class="field"><span>Immagine banner (URL)</span><input type="text" id="f-bannerImg" /></label>
+      </div>
+    </div>
+
+    <!-- GIOCHI -->
+    <div class="card">
+      <h2>7 · Giochi mostrati</h2>
+      <p class="hint">L'app mostra solo i giochi <b>visibili</b> e <b>installati</b> sul tablet, in ordine.</p>
+      <div id="games-list"></div>
+      <button class="ghost small" id="btn-add-game">+ Aggiungi gioco</button>
+    </div>
+
+    <!-- APP GESTITE -->
+    <div class="card">
+      <h2>8 · App da installare/rimuovere da remoto</h2>
+      <p class="hint">
+        APK ospitati da te (es. in <code>launcher/apk/</code>) che la flotta installa/aggiorna/rimuove
+        in silenzio (richiede Device Owner). <code>versionCode</code> 0 = installa solo se assente;
+        maggiore di 0 = reinstalla quando l'installato è più vecchio. I titoli del Play Store non
+        si spingono da qui.
+      </p>
+      <div id="apps-list"></div>
+      <button class="ghost small" id="btn-add-app">+ Aggiungi app gestita</button>
+    </div>
+
+    <!-- WIFI -->
+    <div class="card">
+      <h2>9 · Reti Wi-Fi del locale</h2>
+      <p class="hint">⚠ Questo file è pubblico: la password qui è leggibile da chiunque. Usa una rete dedicata. La rete "lifeline" privata resta solo sul tablet.</p>
+      <div id="wifi-list"></div>
+      <button class="ghost small" id="btn-add-wifi">+ Aggiungi rete</button>
+    </div>
+
+    <!-- TELEMETRIA -->
+    <div class="card">
+      <h2>10 · Telemetria</h2>
+      <label class="inline"><input type="checkbox" id="f-telEnabled" /> Telemetria attiva</label>
+      <label class="field"><span>URL ricevitore (Apps Script /exec)</span><input type="text" id="f-telUrl" /></label>
+      <div class="row">
+        <label class="field"><span>Report ogni (minuti)</span><input type="number" id="f-telReport" min="1" /></label>
+        <label class="field"><span>Heartbeat ogni (minuti)</span><input type="number" id="f-telHeartbeat" min="1" /></label>
+      </div>
+    </div>
+
+    <!-- DISPOSITIVI -->
+    <div class="card">
+      <h2>11 · Impostazioni per singolo monitor (avanzato)</h2>
+      <p class="hint">
+        Override applicati solo a un tablet specifico, identificato dal suo <b>ID dispositivo</b>
+        (lo leggi dalla schermata Diagnostica). Negli "override" metti solo i campi da cambiare
+        rispetto ai default, in formato JSON. Lascia vuoto se non ti serve.
+      </p>
+      <div id="devices-list"></div>
+      <button class="ghost small" id="btn-add-device">+ Aggiungi monitor</button>
+    </div>
+
+    <!-- AVANZATO -->
+    <div class="card">
+      <details>
+        <summary>JSON grezzo (sola lettura, anteprima di ciò che verrà salvato)</summary>
+        <textarea id="raw-preview" style="min-height:220px" readonly></textarea>
+      </details>
+    </div>
+
+    <div class="save-bar">
+      <div class="wrap" style="padding:0">
+        <div class="toolbar">
+          <button id="btn-save">💾 Salva e pubblica (versione <span id="next-ver" class="ver"></span>)</button>
+          <button class="ghost" id="btn-refresh-preview">Aggiorna anteprima</button>
+          <span style="font-size:12.5px;color:var(--muted)">Dopo il salvataggio: riavvia il tablet per applicare subito.</span>
+        </div>
+        <div class="status" id="save-status"></div>
+      </div>
+    </div>
+
+  </div><!-- /editor -->
+
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const API = "https://api.github.com";
+
+// ---- token persistence ----
+const LS = { token:"fp_token", owner:"fp_owner", repo:"fp_repo", branch:"fp_branch" };
+function loadCreds(){
+  $("gh-token").value  = localStorage.getItem(LS.token)  || "";
+  $("gh-owner").value  = localStorage.getItem(LS.owner)  || "Kevodable";
+  $("gh-repo").value   = localStorage.getItem(LS.repo)   || "Fun-Planet-touch";
+  $("gh-branch").value = localStorage.getItem(LS.branch) || "claude/great-meitner-1lluij";
+}
+function saveCreds(){
+  localStorage.setItem(LS.token,  $("gh-token").value.trim());
+  localStorage.setItem(LS.owner,  $("gh-owner").value.trim());
+  localStorage.setItem(LS.repo,   $("gh-repo").value.trim());
+  localStorage.setItem(LS.branch, $("gh-branch").value.trim());
+}
+loadCreds();
+
+// ---- base64 <-> utf8 ----
+function b64ToUtf8(b64){ return new TextDecoder().decode(Uint8Array.from(atob(b64), c=>c.charCodeAt(0))); }
+function utf8ToB64(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin);
+}
+
+let state = { config:null, sha:null };
+
+function status(el, msg, kind){
+  el.className = "status show " + kind;
+  el.textContent = msg;
+}
+
+function ghHeaders(){
+  return {
+    "Authorization": "Bearer " + $("gh-token").value.trim(),
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+function contentsUrl(){
+  const o=$("gh-owner").value.trim(), r=$("gh-repo").value.trim();
+  return `${API}/repos/${o}/${r}/contents/launcher/config.json`;
+}
+
+// ---- LOAD ----
+async function loadConfig(){
+  saveCreds();
+  status($("conn-status"), "Carico la configurazione…", "info");
+  try {
+    const branch = $("gh-branch").value.trim();
+    const res = await fetch(contentsUrl()+"?ref="+encodeURIComponent(branch), { headers: ghHeaders() });
+    if(!res.ok){ throw new Error("HTTP "+res.status+" — "+(await res.text())); }
+    const data = await res.json();
+    state.sha = data.sha;
+    state.config = JSON.parse(b64ToUtf8(data.content));
+    renderAll();
+    $("editor").style.display = "";
+    status($("conn-status"), "Configurazione caricata (versione "+(state.config.configVersion||0)+").", "ok");
+    $("conn-info").textContent = "";
+  } catch(e){
+    status($("conn-status"), "Errore: "+e.message, "err");
+  }
+}
+
+// ---- helpers to get nested defaults safely ----
+function d(){ state.config.defaults = state.config.defaults || {}; return state.config.defaults; }
+function obj(parent, key){ parent[key] = parent[key] || {}; return parent[key]; }
+
+// ---- RENDER forms from state.config ----
+function renderAll(){
+  const c = state.config; const D = d();
+  $("f-configVersion").value = c.configVersion || 0;
+  $("next-ver").textContent = (c.configVersion||0)+1;
+  $("f-poll").value = c.pollIntervalMinutes ?? 15;
+
+  const b = obj(D,"branding");
+  $("f-appTitle").value = b.appTitle || "";
+  $("f-logoUrl").value = b.logoUrl || "";
+  $("f-backgroundUrl").value = b.backgroundUrl || "";
+  $("f-primaryColor").value = b.primaryColor || "";
+  $("f-accentColor").value = b.accentColor || "";
+  $("f-language").value = b.language || "it";
+
+  const l = obj(D,"layout");
+  $("f-columns").value = l.columns ?? 0;
+  $("f-tileSize").value = l.tileSize || "large";
+  $("f-showLabels").checked = l.showLabels !== false;
+
+  const k = obj(D,"kiosk");
+  $("f-exitPin").value = k.exitPin || "";
+  $("f-autoLaunch").value = k.autoLaunchPackage || "";
+  $("f-idle").value = k.idleTimeoutSeconds ?? 0;
+  $("f-session").value = k.sessionLimitSeconds ?? 0;
+  $("f-volume").value = k.maxVolumePercent ?? 100;
+  $("f-brightness").value = k.brightnessPercent ?? 100;
+  $("f-kioskEnabled").checked = k.enabled !== false;
+
+  const op = obj(D,"operational"); const ba = obj(op,"banner");
+  $("f-status").value = op.status || "active";
+  $("f-maintMsg").value = op.maintenanceMessage || "";
+  $("f-bannerEnabled").checked = !!ba.enabled;
+  $("f-bannerText").value = ba.text || "";
+  $("f-bannerImg").value = ba.imageUrl || "";
+
+  const t = obj(D,"telemetry");
+  $("f-telEnabled").checked = !!t.enabled;
+  $("f-telUrl").value = t.reportUrl || "";
+  $("f-telReport").value = t.reportIntervalMinutes ?? 30;
+  $("f-telHeartbeat").value = t.heartbeatIntervalMinutes ?? 5;
+
+  renderGames(); renderApps(); renderWifi(); renderDevices();
+  refreshPreview();
+}
+
+// ---- dynamic lists ----
+function lineRemoveBtn(onClick){
+  const top=document.createElement("div"); top.className="top";
+  const b=document.createElement("button"); b.className="danger small"; b.textContent="Rimuovi";
+  b.onclick=onClick; top.appendChild(b); return top;
+}
+function fieldInput(labelTxt, value, opts={}){
+  const lab=document.createElement("label"); lab.className="field";
+  const sp=document.createElement("span"); sp.textContent=labelTxt; lab.appendChild(sp);
+  const inp=document.createElement(opts.textarea?"textarea":"input");
+  if(!opts.textarea) inp.type = opts.type||"text";
+  if(opts.type==="checkbox"){ inp.checked=!!value; } else { inp.value = value==null?"":value; }
+  if(opts.placeholder) inp.placeholder=opts.placeholder;
+  lab.appendChild(inp); lab.__input=inp; return lab;
+}
+
+function renderGames(){
+  const wrap=$("games-list"); wrap.innerHTML="";
+  const games = obj(d(),"games"); if(!Array.isArray(d().games)) d().games=[];
+  d().games.forEach((g,i)=>{
+    const box=document.createElement("div"); box.className="listitem";
+    box.appendChild(lineRemoveBtn(()=>{ d().games.splice(i,1); renderGames(); refreshPreview(); }));
+    const r1=document.createElement("div"); r1.className="row";
+    const fId=fieldInput("ID univoco", g.id, {placeholder:"es. racing01"});
+    const fPkg=fieldInput("Package Android", g.package, {placeholder:"com.esempio.gioco"});
+    const fName=fieldInput("Nome mostrato", g.displayName);
+    r1.append(fId,fPkg,fName); box.appendChild(r1);
+    const r2=document.createElement("div"); r2.className="row";
+    const fIcon=fieldInput("URL icona", g.iconUrl);
+    const fCat=fieldInput("Categoria", g.category);
+    const fOrder=fieldInput("Ordine", g.order ?? 0, {type:"number"});
+    r2.append(fIcon,fCat,fOrder); box.appendChild(r2);
+    const r3=document.createElement("div"); r3.style.marginTop="6px";
+    const fVis=fieldInput("", g.visible!==false, {type:"checkbox"});
+    fVis.style.display="inline-flex"; fVis.style.gap="6px"; fVis.querySelector("span").textContent="";
+    const visWrap=document.createElement("label"); visWrap.className="inline";
+    visWrap.append(fVis.__input, document.createTextNode(" Visibile ai bambini"));
+    r3.appendChild(visWrap); box.appendChild(r3);
+    box.__get=()=>({
+      id:fId.__input.value.trim(), package:fPkg.__input.value.trim()||null,
+      displayName:fName.__input.value.trim()||null, iconUrl:fIcon.__input.value.trim()||null,
+      category:fCat.__input.value.trim()||null, order:Number(fOrder.__input.value)||0,
+      visible:fVis.__input.checked, sessionLimitSeconds:g.sessionLimitSeconds||0
+    });
+    wrap.appendChild(box);
+  });
+}
+
+function renderApps(){
+  const wrap=$("apps-list"); wrap.innerHTML="";
+  if(!Array.isArray(d().managedApps)) d().managedApps=[];
+  d().managedApps.forEach((a,i)=>{
+    const box=document.createElement("div"); box.className="listitem";
+    box.appendChild(lineRemoveBtn(()=>{ d().managedApps.splice(i,1); renderApps(); refreshPreview(); }));
+    const r1=document.createElement("div"); r1.className="row";
+    const fPkg=fieldInput("Package Android", a.packageName, {placeholder:"com.esempio.gioco"});
+    const fAction=document.createElement("label"); fAction.className="field";
+    fAction.innerHTML="<span>Azione</span>";
+    const sel=document.createElement("select");
+    sel.innerHTML="<option value='install'>installa/aggiorna</option><option value='uninstall'>rimuovi</option>";
+    sel.value=a.action||"install"; fAction.appendChild(sel); fAction.__input=sel;
+    r1.append(fPkg,fAction); box.appendChild(r1);
+    const r2=document.createElement("div"); r2.className="row";
+    const fUrl=fieldInput("URL del file .apk", a.apkUrl);
+    const fVer=fieldInput("versionCode", a.versionCode ?? 0, {type:"number"});
+    r2.append(fUrl,fVer); box.appendChild(r2);
+    const fSha=fieldInput("SHA-256 (opzionale)", a.sha256); box.appendChild(fSha);
+    box.__get=()=>{
+      const o={ packageName:fPkg.__input.value.trim(), action:sel.value };
+      if(sel.value!=="uninstall"){
+        o.apkUrl=fUrl.__input.value.trim()||null;
+        o.versionCode=Number(fVer.__input.value)||0;
+        const s=fSha.__input.value.trim(); if(s) o.sha256=s;
+      }
+      return o;
+    };
+    wrap.appendChild(box);
+  });
+}
+
+function renderWifi(){
+  const wrap=$("wifi-list"); wrap.innerHTML="";
+  const net=obj(d(),"network"); if(!Array.isArray(net.wifiNetworks)) net.wifiNetworks=[];
+  net.wifiNetworks.forEach((w,i)=>{
+    const box=document.createElement("div"); box.className="listitem";
+    box.appendChild(lineRemoveBtn(()=>{ net.wifiNetworks.splice(i,1); renderWifi(); refreshPreview(); }));
+    const r=document.createElement("div"); r.className="row";
+    const fSsid=fieldInput("Nome rete (SSID)", w.ssid);
+    const fPass=fieldInput("Password", w.password);
+    const fPrio=fieldInput("Priorità", w.priority ?? 0, {type:"number"});
+    r.append(fSsid,fPass,fPrio); box.appendChild(r);
+    box.__get=()=>({ ssid:fSsid.__input.value.trim(), password:fPass.__input.value||null,
+      priority:Number(fPrio.__input.value)||0, hidden:!!w.hidden });
+    wrap.appendChild(box);
+  });
+}
+
+function renderDevices(){
+  const wrap=$("devices-list"); wrap.innerHTML="";
+  state.config.devices = state.config.devices || {};
+  const entries = Object.entries(state.config.devices);
+  entries.forEach(([id,ov])=>{
+    const box=document.createElement("div"); box.className="listitem";
+    box.appendChild(lineRemoveBtn(()=>{ delete state.config.devices[id]; renderDevices(); refreshPreview(); }));
+    const fId=fieldInput("ID dispositivo", id, {placeholder:"da schermata Diagnostica"});
+    const label=(ov&&ov.label)||"";
+    const fLabel=fieldInput("Etichetta", label);
+    const rest=Object.assign({}, ov); delete rest.label;
+    const fJson=fieldInput("Override (JSON, solo i campi da cambiare)",
+      Object.keys(rest).length?JSON.stringify(rest,null,2):"", {textarea:true,
+      placeholder:'{ "games": [ { "id": "racing01", "visible": false } ] }'});
+    box.append(fId,fLabel,fJson);
+    box.__get=()=>{
+      const key=fId.__input.value.trim(); if(!key) return null;
+      let over={}; const raw=fJson.__input.value.trim();
+      if(raw){ over=JSON.parse(raw); } // throws on invalid -> caught in collect
+      const lab=fLabel.__input.value.trim(); if(lab) over.label=lab;
+      return [key, over];
+    };
+    wrap.appendChild(box);
+  });
+}
+
+// ---- COLLECT forms into a config object ----
+function collectConfig(){
+  const c = JSON.parse(JSON.stringify(state.config)); // preserve unknown keys
+  c.pollIntervalMinutes = Number($("f-poll").value)||15;
+  const D = c.defaults = c.defaults || {};
+
+  D.branding = Object.assign(D.branding||{}, {
+    appTitle:$("f-appTitle").value, logoUrl:$("f-logoUrl").value||null,
+    backgroundUrl:$("f-backgroundUrl").value||null,
+    primaryColor:$("f-primaryColor").value||null, accentColor:$("f-accentColor").value||null,
+    language:$("f-language").value||"it",
+  });
+  D.layout = Object.assign(D.layout||{}, {
+    columns:Number($("f-columns").value)||0, tileSize:$("f-tileSize").value, showLabels:$("f-showLabels").checked,
+  });
+  D.kiosk = Object.assign(D.kiosk||{}, {
+    enabled:$("f-kioskEnabled").checked, exitPin:$("f-exitPin").value||null,
+    idleTimeoutSeconds:Number($("f-idle").value)||0, sessionLimitSeconds:Number($("f-session").value)||0,
+    maxVolumePercent:Number($("f-volume").value)||100, brightnessPercent:Number($("f-brightness").value)||100,
+    autoLaunchPackage:$("f-autoLaunch").value||null,
+  });
+  D.operational = Object.assign(D.operational||{}, {
+    status:$("f-status").value, maintenanceMessage:$("f-maintMsg").value,
+    banner:{ enabled:$("f-bannerEnabled").checked, text:$("f-bannerText").value, imageUrl:$("f-bannerImg").value },
+  });
+  D.telemetry = Object.assign(D.telemetry||{}, {
+    enabled:$("f-telEnabled").checked, reportUrl:$("f-telUrl").value||null,
+    reportIntervalMinutes:Number($("f-telReport").value)||30,
+    heartbeatIntervalMinutes:Number($("f-telHeartbeat").value)||5,
+  });
+
+  D.games = [...$("games-list").children].map(b=>b.__get()).filter(g=>g.id);
+  D.managedApps = [...$("apps-list").children].map(b=>b.__get()).filter(a=>a.packageName);
+  D.network = D.network || {};
+  D.network.wifiNetworks = [...$("wifi-list").children].map(b=>b.__get()).filter(w=>w.ssid);
+
+  const devs={};
+  [...$("devices-list").children].forEach(b=>{ const e=b.__get(); if(e) devs[e[0]]=e[1]; });
+  c.devices = devs;
+
+  return c;
+}
+
+function refreshPreview(){
+  try { $("raw-preview").value = JSON.stringify(collectConfig(), null, 2); }
+  catch(e){ $("raw-preview").value = "⚠ Errore in un campo JSON: "+e.message; }
+}
+
+// ---- SAVE ----
+async function saveConfig(){
+  let cfg;
+  try { cfg = collectConfig(); }
+  catch(e){ status($("save-status"), "Controlla gli override JSON dei dispositivi: "+e.message, "err"); return; }
+  cfg.configVersion = (Number(state.config.configVersion)||0) + 1;
+  cfg.updatedAt = new Date().toISOString();
+  const body = {
+    message: "Config flotta v"+cfg.configVersion+" (da pannello web)",
+    content: utf8ToB64(JSON.stringify(cfg, null, 2) + "\n"),
+    sha: state.sha,
+    branch: $("gh-branch").value.trim(),
+  };
+  status($("save-status"), "Salvataggio in corso…", "info");
+  $("btn-save").disabled = true;
+  try {
+    const res = await fetch(contentsUrl(), { method:"PUT", headers:ghHeaders(), body:JSON.stringify(body) });
+    if(!res.ok){ throw new Error("HTTP "+res.status+" — "+(await res.text())); }
+    const data = await res.json();
+    state.sha = data.content.sha;
+    state.config = cfg;
+    $("f-configVersion").value = cfg.configVersion;
+    $("next-ver").textContent = cfg.configVersion+1;
+    status($("save-status"), "✓ Pubblicato (versione "+cfg.configVersion+"). I tablet si aggiornano entro l'intervallo di polling o al riavvio.", "ok");
+  } catch(e){
+    status($("save-status"), "Errore nel salvataggio: "+e.message+" — se è un conflitto, ricarica la config.", "err");
+  } finally {
+    $("btn-save").disabled = false;
+  }
+}
+
+// ---- wiring ----
+$("btn-load").onclick = loadConfig;
+$("btn-forget").onclick = ()=>{ localStorage.removeItem(LS.token); $("gh-token").value=""; status($("conn-status"),"Token dimenticato da questo browser.","info"); };
+$("btn-add-game").onclick = ()=>{ d().games.push({id:"",visible:true,order:(d().games.length+1)}); renderGames(); refreshPreview(); };
+$("btn-add-app").onclick = ()=>{ d().managedApps.push({packageName:"",action:"install",versionCode:0}); renderApps(); refreshPreview(); };
+$("btn-add-wifi").onclick = ()=>{ obj(d(),"network").wifiNetworks.push({ssid:"",password:"",priority:0,hidden:false}); renderWifi(); refreshPreview(); };
+$("btn-add-device").onclick = ()=>{ state.config.devices["NUOVO-DEVICE-ID-"+Date.now()]={label:""}; renderDevices(); refreshPreview(); };
+$("btn-refresh-preview").onclick = refreshPreview;
+$("btn-save").onclick = saveConfig;
+document.addEventListener("input", e=>{ if($("editor").style.display!=="none") refreshPreview(); });
+</script>
+</body>
+</html>
