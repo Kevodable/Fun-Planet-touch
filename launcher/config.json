@@ -1,22 +1,26 @@
 {
   "schemaVersion": 1,
-  "configVersion": 1,
-  "updatedAt": "2026-06-21T10:00:00+02:00",
+  "configVersion": 2,
+  "updatedAt": "2026-06-21T20:32:59.091Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
-      "appTitle": "Kids Fun Planet",
+      "appTitle": "Benvenuti a Kids Fun Planet!",
       "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/logo.png",
       "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-default.jpg",
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
       "language": "it"
     },
-    "layout": { "columns": 4, "tileSize": "large", "showLabels": true },
+    "layout": {
+      "columns": 4,
+      "tileSize": "large",
+      "showLabels": true
+    },
     "kiosk": {
       "enabled": true,
       "exitPin": "4271",
-      "idleTimeoutSeconds": 150,
+      "idleTimeoutSeconds": 60,
       "sessionLimitSeconds": 0,
       "maxVolumePercent": 70,
       "brightnessPercent": 90,
@@ -25,7 +29,11 @@
     "operational": {
       "status": "active",
       "maintenanceMessage": "",
-      "banner": { "enabled": false, "text": "", "imageUrl": "" }
+      "banner": {
+        "enabled": false,
+        "text": "",
+        "imageUrl": ""
+      }
     },
     "games": [
       {
@@ -51,7 +59,12 @@
     ],
     "network": {
       "wifiNetworks": [
-        { "ssid": "WiFi-Locale", "password": "password-del-locale", "priority": 100, "hidden": false }
+        {
+          "ssid": "WiFi-Locale",
+          "password": "password-del-locale",
+          "priority": 100,
+          "hidden": false
+        }
       ]
     },
     "update": {
@@ -84,12 +97,22 @@
   },
   "devices": {
     "INCOLLA-QUI-IL-DEVICE-ID": {
-      "label": "Touch ingresso sala",
-      "branding": { "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-ingresso.jpg" },
+      "branding": {
+        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-ingresso.jpg"
+      },
       "games": [
-        { "id": "racing01", "visible": true, "order": 1 },
-        { "id": "puzzle01", "visible": true, "order": 2 }
-      ]
+        {
+          "id": "racing01",
+          "visible": true,
+          "order": 1
+        },
+        {
+          "id": "puzzle01",
+          "visible": true,
+          "order": 2
+        }
+      ],
+      "label": "Touch ingresso sala"
     }
   }
 }
