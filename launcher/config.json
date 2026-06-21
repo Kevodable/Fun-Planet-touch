@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 3,
-  "updatedAt": "2026-06-21T21:00:13.630Z",
+  "configVersion": 4,
+  "updatedAt": "2026-06-21T21:05:00.145Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
@@ -27,7 +27,7 @@
       "autoLaunchPackage": null
     },
     "operational": {
-      "status": "maintenance",
+      "status": "active",
       "maintenanceMessage": "In manutenzione. Torniamo subito",
       "banner": {
         "enabled": true,
