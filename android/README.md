@@ -53,6 +53,9 @@ l'**installazione remota silenziosa degli APK** (i `managedApps` dal pannello). 
    ```
    adb shell appops set it.bigbenmatic.gamelauncher SYSTEM_ALERT_WINDOW allow
    ```
+   (# 4.) (facoltativo) rendilo la Home
+adb shell cmd package set-home-activity it.bigbenmatic.gamelauncher/.MainActivity
+
 8. **Apri l'app**: nella schermata Impostazioni (tieni premuta l'icona ⚙️ → PIN) vedrai la
    modalità kiosk attiva. Da ora il tablet resta bloccato sull'app e sui giochi consentiti.
 
