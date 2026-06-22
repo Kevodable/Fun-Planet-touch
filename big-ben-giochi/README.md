@@ -23,7 +23,9 @@ big-ben-giochi/
 ├── README.md             # questo file
 ├── assets/
 │   ├── shared.css        # reset, palette, classi util, animazioni
-│   └── shared.js         # oggetto globale BB con le utility comuni
+│   ├── shared.js         # oggetto globale BB con le utility comuni
+│   ├── logo.svg          # logo Kids Fun Planet (vettoriale)
+│   └── mascotte/         # mascotte KIP, STELLA, BOLT, BOBO (.svg per il web, .png per il launcher)
 ├── memory/
 │   └── index.html        # 🧠 Abbina le Coppie
 ├── talpe/
@@ -79,6 +81,25 @@ Definita in `assets/shared.css`:
 ```
 
 Stile: angoli arrotondati generosi, ombre morbide, animazioni elastiche.
+
+### Mascotte
+
+In `assets/mascotte/` ci sono le quattro mascotte Kids Fun Planet, ognuna in due
+formati: **`.svg`** (usato nelle pagine web — gallery, schermate di vittoria,
+schermate di avvio) e **`.png`** (usato dal launcher Android, che renderizza solo
+raster). Sono versioni vettoriali stilizzate, da sostituire facilmente con l'arte
+ufficiale mantenendo gli stessi nomi file.
+
+| File | Mascotte | Gioco associato |
+|------|----------|-----------------|
+| `kip` | 🛸 alieno verde | Acchiappa la Talpa |
+| `stella` | ⭐ stella gialla | Abbina le Coppie |
+| `bolt` | 🤖 robot blu | Scoppia i Palloncini |
+| `bobo` | 🧸 orsetto | brand / gallery |
+
+> Le icone delle tile usano l'SVG nella **gallery web** (`giochi.json` →
+> `iconImg`) e il PNG nel **launcher** (`config.json` → `iconUrl`), perché il
+> launcher non decodifica gli SVG.
 
 ---
 

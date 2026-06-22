@@ -76,6 +76,8 @@
       text-align:center;
     }
     .start__emoji{ font-size:clamp(60px,18vmin,130px); }
+    .start__img{ width:clamp(120px,28vmin,200px); height:auto;
+      filter:drop-shadow(0 8px 14px rgba(0,0,0,.2)); }
     .start__txt{ font-size:clamp(20px,5vmin,34px); font-weight:900; color:var(--bb-burgundy); }
   </style>
 </head>
@@ -85,7 +87,7 @@
     <div class="bb-stage">
       <div class="campo" id="campo">
         <div class="start" id="start">
-          <div class="start__emoji">🎈</div>
+          <img class="start__img" src="../assets/mascotte/bolt.svg" alt="">
           <div class="start__txt">Scoppia più palloncini<br>che puoi in 60 secondi!</div>
           <button class="bb-btn bb-btn--burgundy" id="startBtn">▶ Inizia</button>
         </div>
@@ -262,9 +264,11 @@
       palloncini = [];
 
       var record = BB.score("palloncini", punteggio);
+      var nuovoRecord = punteggio > 0 && punteggio >= record;
       BB.win({
-        emoji: punteggio >= record ? "🏆" : "🎈",
-        titolo: "Tempo scaduto!",
+        mascotte: nuovoRecord ? null : "../assets/mascotte/bolt.svg",
+        emoji: nuovoRecord ? "🏆" : null,
+        titolo: nuovoRecord ? "Nuovo record!" : "Tempo scaduto!",
         punteggio: punteggio + " palloncini",
         record: record,
         rigioca: avvia

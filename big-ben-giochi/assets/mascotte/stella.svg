@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- STELLA — stella gialla con fiocco rosa e gonnellino arcobaleno.
+     Mascotte stilizzata Kids Fun Planet (ispirata all'arte ufficiale). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" role="img" aria-label="Stella">
+  <ellipse cx="120" cy="288" rx="66" ry="9" fill="#2A1622" opacity=".12"/>
+  <!-- gambine (collegano gonnellino e scarpe) -->
+  <rect x="92" y="240" width="15" height="34" rx="7" fill="#FFD23F"/>
+  <rect x="133" y="240" width="15" height="34" rx="7" fill="#FFD23F"/>
+  <!-- scarpe -->
+  <ellipse cx="98" cy="274" rx="20" ry="12" fill="#2E5BFF"/>
+  <ellipse cx="146" cy="274" rx="20" ry="12" fill="#2E5BFF"/>
+  <!-- gonnellino arcobaleno -->
+  <path d="M70 214 Q120 196 174 214 L186 252 Q120 240 58 252 Z" fill="#FF6B6B"/>
+  <path d="M76 222 Q120 206 168 222 L176 248 Q120 238 66 248 Z" fill="#FFB020"/>
+  <path d="M82 230 Q120 216 162 230 L168 246 Q120 238 74 246 Z" fill="#34C759"/>
+  <path d="M88 238 Q120 226 154 238 L158 248 Q120 242 84 248 Z" fill="#2E5BFF"/>
+  <!-- corpo a stella -->
+  <g stroke="#F6B400" stroke-width="6" stroke-linejoin="round">
+    <path d="M120 36 L143 95 L205 99 L156 139 L172 200 L120 165 L68 200 L84 139 L35 99 L97 95 Z" fill="#FFD23F"/>
+  </g>
+  <!-- braccio che saluta -->
+  <path d="M188 104 q22 -10 30 -30" fill="none" stroke="#FFD23F" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="220" cy="70" r="9" fill="#FFD23F"/>
+  <!-- guance -->
+  <circle cx="88" cy="128" r="11" fill="#FFB6C1" opacity=".8"/>
+  <circle cx="150" cy="128" r="11" fill="#FFB6C1" opacity=".8"/>
+  <!-- occhi -->
+  <ellipse cx="100" cy="112" rx="13" ry="16" fill="#fff"/>
+  <ellipse cx="138" cy="112" rx="13" ry="16" fill="#fff"/>
+  <circle cx="102" cy="115" r="8" fill="#2A1622"/>
+  <circle cx="136" cy="115" r="8" fill="#2A1622"/>
+  <circle cx="105" cy="111" r="3" fill="#fff"/>
+  <circle cx="139" cy="111" r="3" fill="#fff"/>
+  <!-- sorriso -->
+  <path d="M104 138 Q120 154 136 138" fill="none" stroke="#2A1622" stroke-width="5" stroke-linecap="round"/>
+  <!-- fiocco -->
+  <g>
+    <path d="M150 44 q-18 -16 -30 2 q22 8 30 -2 Z" fill="#E8488B"/>
+    <path d="M150 44 q22 -14 34 6 q-24 6 -34 -6 Z" fill="#E8488B"/>
+    <circle cx="151" cy="46" r="7" fill="#FFD3E4"/>
+  </g>
+</svg>
