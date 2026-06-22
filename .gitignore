@@ -2,6 +2,8 @@
 *.apk
 *.aab
 *.idsig
+# Eccezione: l'APK pubblicato per l'aggiornamento OTA del launcher (servito da GitHub Pages)
+!launcher/apk/launcher-latest.apk
 
 # macOS
 .DS_Store

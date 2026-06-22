@@ -62,6 +62,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         prefs = PrefsManager(this)
         hideSystemBars()
+        // Schermo sempre acceso: mentre l'app è in primo piano (qualsiasi alimentazione)
+        // e, da Device Owner, anche a livello di sistema quando il tablet è alimentato.
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        KioskManager.keepScreenOnWhilePlugged(this)
         KioskManager.syncAllowedPackages(this, prefs.getSelectedPackages())
 
         setContent {

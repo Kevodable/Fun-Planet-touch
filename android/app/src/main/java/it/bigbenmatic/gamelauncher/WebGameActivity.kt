@@ -38,6 +38,8 @@ class WebGameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         hideSystemBars()
+        // Schermo sempre acceso durante il gioco.
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         val wv = WebView(this).apply {
             settings.apply {

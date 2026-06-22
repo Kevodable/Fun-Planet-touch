@@ -25,13 +25,58 @@ object WifiProvisioner {
         val unique = networks.distinctBy { it.ssid }.filter { it.ssid.isNotBlank() }
         if (unique.isEmpty()) return
         val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager ?: return
+        val isOwner = KioskManager.isDeviceOwner(context)
         runCatching {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                applySuggestions(wifi, unique)
-            } else {
-                applyLegacy(wifi, unique)
+            when {
+                // Da Device Owner possiamo usare le API legacy "privilegiate" anche su
+                // Android 10+: aggiungono la rete e FORZANO la connessione, senza la
+                // notifica di approvazione richiesta dalle "suggestion".
+                isOwner -> connectAsDeviceOwner(wifi, unique)
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> applySuggestions(wifi, unique)
+                else -> applyLegacy(wifi, unique)
             }
         }.onFailure { Log.w(TAG, "Configurazione Wi-Fi fallita: ${it.message}") }
+    }
+
+    /**
+     * Device Owner: aggiunge le reti e si connette davvero a quella a priorità più alta
+     * (di norma la "lifeline"). Idempotente: rimuove prima eventuali nostre configurazioni
+     * con lo stesso SSID per non accumularle. Funziona su tutte le versioni perché un app
+     * Device Owner è esente dalle restrizioni alle API legacy del Wi-Fi.
+     */
+    @Suppress("DEPRECATION")
+    private fun connectAsDeviceOwner(wifi: WifiManager, networks: List<WifiNetwork>) {
+        if (!wifi.isWifiEnabled) runCatching { wifi.isWifiEnabled = true }
+        val existing = runCatching { wifi.configuredNetworks }.getOrNull().orEmpty()
+        val ordered = networks.sortedByDescending { it.priority }
+        var primaryNetId = -1
+        for (n in ordered) {
+            val quoted = "\"${n.ssid}\""
+            // rimuovi eventuali configurazioni precedenti per lo stesso SSID
+            existing.filter { it.SSID == quoted }.forEach { runCatching { wifi.removeNetwork(it.networkId) } }
+            val conf = WifiConfiguration().apply {
+                SSID = quoted
+                hiddenSSID = n.hidden
+                if (n.password.isNullOrEmpty()) {
+                    allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+                } else {
+                    preSharedKey = "\"${n.password}\""
+                }
+            }
+            val id = wifi.addNetwork(conf)
+            if (id != -1) {
+                if (primaryNetId == -1) primaryNetId = id
+                wifi.enableNetwork(id, false)
+            } else {
+                Log.w(TAG, "addNetwork rifiutato SSID=${n.ssid}")
+            }
+        }
+        runCatching { wifi.saveConfiguration() }
+        // Forza la connessione alla rete a priorità più alta (disabilita temporaneamente le altre).
+        if (primaryNetId != -1) {
+            wifi.enableNetwork(primaryNetId, true)
+            wifi.reconnect()
+        }
     }
 
     private fun applySuggestions(wifi: WifiManager, networks: List<WifiNetwork>) {

@@ -203,6 +203,23 @@
       <button class="ghost small" id="btn-add-app">+ Aggiungi app gestita</button>
     </div>
 
+    <!-- AGGIORNAMENTO LAUNCHER (OTA) -->
+    <div class="card">
+      <h2>8b · Aggiornamento del launcher (OTA)</h2>
+      <p class="hint">
+        Aggiorna l'app launcher su tutta la flotta in silenzio (richiede Device Owner).
+        Carica il nuovo APK all'URL qui sotto (es. <code>launcher/apk/launcher-latest.apk</code>),
+        poi imposta <b>Versione disponibile</b> al <code>versionCode</code> del nuovo APK e salva:
+        i tablet con versione installata <i>minore</i> si aggiornano da soli al prossimo controllo.
+        ⚠ Il nuovo APK deve essere firmato con la <b>stessa chiave</b> di quello installato.
+      </p>
+      <div class="row">
+        <label class="field"><span>Versione disponibile (versionCode)</span><input type="number" id="f-updVersion" min="0" /></label>
+        <label class="field"><span>URL dell'APK</span><input type="text" id="f-updApkUrl" placeholder="https://…/launcher/apk/launcher-latest.apk" /></label>
+      </div>
+      <label class="inline"><input type="checkbox" id="f-updSilent" /> Installazione silenziosa (Device Owner)</label>
+    </div>
+
     <!-- WIFI -->
     <div class="card">
       <h2>9 · Reti Wi-Fi del locale</h2>
@@ -371,6 +388,11 @@ function renderAll(){
   $("f-telReport").value = t.reportIntervalMinutes ?? 30;
   $("f-telHeartbeat").value = t.heartbeatIntervalMinutes ?? 5;
 
+  const up = obj(D,"update");
+  $("f-updVersion").value = up.latestVersionCode ?? 0;
+  $("f-updApkUrl").value = up.apkUrl || "";
+  $("f-updSilent").checked = up.silentInstall !== false;
+
   renderGames(); renderApps(); renderWifi(); renderDevices();
   refreshPreview();
 }
@@ -534,6 +556,11 @@ function collectConfig(){
     enabled:$("f-telEnabled").checked, reportUrl:$("f-telUrl").value||null,
     reportIntervalMinutes:Number($("f-telReport").value)||30,
     heartbeatIntervalMinutes:Number($("f-telHeartbeat").value)||5,
+  });
+  D.update = Object.assign(D.update||{}, {
+    latestVersionCode:Number($("f-updVersion").value)||0,
+    apkUrl:$("f-updApkUrl").value||null,
+    silentInstall:$("f-updSilent").checked,
   });
 
   D.games = [...$("games-list").children].map(b=>b.__get()).filter(g=>g.id);
