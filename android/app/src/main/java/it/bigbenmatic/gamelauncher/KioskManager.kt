@@ -38,6 +38,26 @@ object KioskManager {
         }
     }
 
+    /**
+     * Tiene lo schermo SEMPRE acceso quando il tablet è alimentato (carica AC/USB/wireless).
+     * Imposta la global setting STAY_ON_WHILE_PLUGGED_IN: persiste a livello di sistema e
+     * vale anche fuori dall'app. Richiede Device Owner. Idempotente.
+     */
+    fun keepScreenOnWhilePlugged(context: Context) {
+        if (!isDeviceOwner(context)) return
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val plugged = android.os.BatteryManager.BATTERY_PLUGGED_AC or
+            android.os.BatteryManager.BATTERY_PLUGGED_USB or
+            android.os.BatteryManager.BATTERY_PLUGGED_WIRELESS
+        runCatching {
+            dpm.setGlobalSetting(
+                adminComponent(context),
+                android.provider.Settings.Global.STAY_ON_WHILE_PLUGGED_IN,
+                plugged.toString(),
+            )
+        }
+    }
+
     /** Engages kiosk pinning if this app is Device Owner. Safe to call repeatedly. */
     fun engage(activity: Activity) {
         if (!isDeviceOwner(activity)) return
