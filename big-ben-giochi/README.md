@@ -25,7 +25,8 @@ big-ben-giochi/
 │   ├── shared.css        # reset, palette, classi util, animazioni
 │   ├── shared.js         # oggetto globale BB con le utility comuni
 │   ├── logo.svg          # logo Kids Fun Planet (vettoriale)
-│   └── mascotte/         # mascotte KIP, STELLA, BOLT, BOBO (.svg per il web, .png per il launcher)
+│   ├── icons/            # icone che raffigurano i giochi (SVG gallery + PNG launcher)
+│   └── mascotte/         # mascotte ufficiali KIP, STELLA, BOLT, BOBO (PNG trasparenti)
 ├── memory/
 │   └── index.html        # 🧠 Abbina le Coppie
 ├── talpe/

@@ -95,7 +95,7 @@
 
       <!-- Schermata iniziale "Tocca per giocare" -->
       <div class="start" id="start">
-        <img class="start__img" src="../assets/mascotte/kip.svg" alt="">
+        <img class="start__img" src="../assets/mascotte/kip.png" alt="">
         <div class="start__txt">Colpisci le talpe!<br>Hai 60 secondi.</div>
         <button class="bb-btn bb-btn--blue" id="startBtn">▶ Inizia</button>
       </div>
@@ -111,6 +111,16 @@
     var board = document.getElementById("board");
     var startScreen = document.getElementById("start");
     var DURATA = 60;          // secondi di partita
+
+    // Difficoltà regolabile via URL: ?liv=facile|medio|difficile (default facile).
+    // base = ms iniziali in cui la talpa resta su; min = limite minimo; scal = quanto
+    // accelera per ogni punto. Si imposta per gioco dall'admin aggiungendo ?liv=... all'URL.
+    var LIV = (new URLSearchParams(location.search).get("liv") || "facile").toLowerCase();
+    var DIFF = ({
+      facile:    { base: 1200, min: 600, scal: 12 },
+      medio:     { base: 900,  min: 380, scal: 18 },
+      difficile: { base: 680,  min: 260, scal: 24 }
+    })[LIV] || { base: 1200, min: 600, scal: 12 };
     var punteggio = 0;
     var tempo = DURATA;
     var buche = [];           // i 9 elementi buca
@@ -137,7 +147,7 @@
     // Calcola la velocità: la talpa resta su meno tempo man mano che il
     // punteggio cresce (da ~900ms fino a ~380ms minimo).
     function durataTalpa() {
-      return Math.max(380, 900 - punteggio * 18);
+      return Math.max(DIFF.min, DIFF.base - punteggio * DIFF.scal);
     }
 
     function mostraTalpa() {
@@ -200,7 +210,7 @@
       var record = BB.score("talpe", punteggio);
       var nuovoRecord = punteggio > 0 && punteggio >= record;
       BB.win({
-        mascotte: nuovoRecord ? null : "../assets/mascotte/kip.svg",
+        mascotte: nuovoRecord ? null : "../assets/mascotte/kip.png",
         emoji: nuovoRecord ? "🏆" : null,
         titolo: nuovoRecord ? "Nuovo record!" : "Tempo scaduto!",
         punteggio: punteggio + " talpe",

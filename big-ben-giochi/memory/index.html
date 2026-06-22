@@ -1,197 +1,105 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#E8488B">
-  <title>Abbina le Coppie</title>
-  <link rel="stylesheet" href="../assets/shared.css">
-  <style>
-    /* ----- Memory: griglia di carte 4x2 (8 carte) ----- */
-    .board{
-      display:grid;
-      gap:clamp(10px,2.4vmin,22px);
-      /* 4 colonne x 2 righe in landscape; si riflette in portrait */
-      grid-template-columns:repeat(4, 1fr);
-      grid-template-rows:repeat(2, 1fr);
-      width:min(96vw, 900px);
-      height:100%;
-      max-height:100%;
-    }
-    /* In portrait stretto passiamo a 2 colonne x 4 righe */
-    @media (orientation:portrait){
-      .board{ grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(4,1fr); }
-    }
-    /* La carta è una scena 3D che ruota per girarsi */
-    .carta{
-      position:relative;
-      perspective:1000px;
-      min-height:64px;
-      min-width:64px;
-    }
-    .carta__inner{
-      position:absolute;
-      inset:0;
-      transition:transform .4s var(--bb-ease-elastic);
-      transform-style:preserve-3d;
-    }
-    .carta.flip .carta__inner,
-    .carta.match .carta__inner{ transform:rotateY(180deg); }
-    .carta__faccia{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:var(--bb-radius);
-      backface-visibility:hidden;
-      box-shadow:var(--bb-shadow);
-      font-size:clamp(40px,12vmin,84px);
-    }
-    /* Dorso: colore pieno a tema con un punto interrogativo */
-    .carta__retro{
-      background:linear-gradient(135deg, var(--bb-pink), var(--bb-burgundy));
-      color:#fff;
-    }
-    /* Fronte: emoji su carta chiara */
-    .carta__fronte{
-      background:#fff;
-      transform:rotateY(180deg);
-    }
-    .carta.match{ animation:bb-pop .4s var(--bb-ease-elastic); }
-    .carta.match .carta__fronte{
-      background:var(--bb-pink-soft);
-      box-shadow:0 0 0 4px var(--bb-pink) inset;
-    }
-    .carta.wrong .carta__inner{ animation:bb-shake .4s ease; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Kids Fun Planet - Memory Game</title>
+<meta name="theme-color" content="#7c6bff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Memory Game">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<!-- Font: stack di sistema (niente CDN, funziona offline nel kiosk) -->
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Pulsante Esci del kiosk, sovrapposto al gioco (target tap >= 64px) */
+  #bb-exit-kiosk{
+    position:fixed; top:calc(env(safe-area-inset-top) + 10px); left:calc(env(safe-area-inset-left) + 10px);
+    z-index:9999; min-height:64px; min-width:64px; padding:0 22px;
+    display:inline-flex; align-items:center; gap:8px;
+    border:none; border-radius:999px; cursor:pointer;
+    background:#7A1F3D; color:#fff; font-weight:800;
+    font-size:20px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    box-shadow:0 8px 20px rgba(122,31,61,.35);
+  }
+  #bb-exit-kiosk:active{ transform:scale(.94); }
+</style>
 </head>
 <body>
-  <div class="bb-screen">
-    <!-- header iniettato da JS -->
-    <div class="bb-stage">
-      <div class="board" id="board"></div>
+  <!-- Pulsante per tornare alla griglia del launcher -->
+  <button id="bb-exit-kiosk" aria-label="Esci">← Esci</button>
+
+  <div class="sky">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="star-twinkle s1">⭐</div>
+    <div class="star-twinkle s2">✨</div>
+    <div class="star-twinkle s3">🌟</div>
+    <div class="star-twinkle s4">✨</div>
+  </div>
+
+  <div class="game-container">
+    <div class="layout">
+      <header>
+        <div class="logo-wrap">
+          <img src="assets/mascots/banner.jpg" alt="Kids Fun Planet" class="banner-img">
+          <h1>🎉 Memory Game 🎉</h1>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-icon">🕹️</span>
+            <span class="stat-label">Mosse</span>
+            <span id="moves" class="stat-value">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">⏱️</span>
+            <span class="stat-label">Tempo</span>
+            <span id="timer" class="stat-value">00:00</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">💎</span>
+            <span class="stat-label">Coppie</span>
+            <span id="pairs" class="stat-value">0/8</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="restart-btn">🔄 Nuova partita</button>
+          <select id="difficulty">
+            <option value="8">🌈 Facile (4x4)</option>
+            <option value="18">🚀 Difficile (6x6)</option>
+          </select>
+        </div>
+      </header>
+
+      <main id="board" class="board"></main>
+    </div>
+
+    <div id="win-overlay" class="overlay hidden">
+      <div class="confetti-layer" id="confetti-layer"></div>
+      <div class="win-card">
+        <img src="assets/mascots/cards/stella.jpg" alt="Stella" class="win-mascot">
+        <h2>🎉 Hai vinto! 🎉</h2>
+        <p>Mosse: <span id="final-moves"></span></p>
+        <p>Tempo: <span id="final-time"></span></p>
+        <button id="play-again-btn">✨ Gioca ancora ✨</button>
+      </div>
     </div>
   </div>
 
+  <!-- Utility condivise del kiosk (BB.home, ecc.) -->
   <script src="../assets/shared.js"></script>
   <script>
-    BB.lockScroll();
-    // Header con titolo; lo slot info mostra le mosse
-    var info = BB.header("🧠 Abbina le Coppie");
+    // Pulsante Esci → torna al launcher (o alla gallery come fallback)
+    document.getElementById("bb-exit-kiosk").addEventListener("click", function(){ BB.home(); });
     // Auto-ritorno alla gallery dopo 60s di inattività
     BB.idle(60000, BB.home);
-
-    var board = document.getElementById("board");
-
-    // Set di emoji a tema (animali + frutta): ne servono 4 per 8 carte
-    var EMOJI = ["🐶", "🐱", "🦊", "🐸", "🦁", "🐼", "🍓", "🍌", "🍉", "🍎"];
-
-    var primaCarta = null;   // prima carta girata in attesa di confronto
-    var bloccato = false;     // blocca i tap durante l'animazione di confronto
-    var mosse = 0;
-    var coppieTrovate = 0;
-    var totaleCoppie = 4;     // 8 carte = 4 coppie
-
-    function aggiornaInfo() {
-      info.textContent = "Mosse: " + mosse;
-    }
-
-    // Costruisce e mischia il mazzo, poi disegna la board
-    function nuovaPartita() {
-      primaCarta = null;
-      bloccato = false;
-      mosse = 0;
-      coppieTrovate = 0;
-      aggiornaInfo();
-      board.innerHTML = "";
-
-      // Scegli 4 emoji casuali e duplicale
-      var scelte = BB.shuffle(EMOJI.slice()).slice(0, totaleCoppie);
-      var mazzo = BB.shuffle(scelte.concat(scelte));
-
-      mazzo.forEach(function (emoji) {
-        var carta = document.createElement("button");
-        carta.className = "carta";
-        carta.dataset.emoji = emoji;
-        carta.innerHTML =
-          '<div class="carta__inner">' +
-            '<div class="carta__faccia carta__retro">❓</div>' +
-            '<div class="carta__faccia carta__fronte">' + emoji + "</div>" +
-          "</div>";
-        carta.addEventListener("click", function () { giraCarta(carta); });
-        board.appendChild(carta);
-      });
-    }
-
-    function giraCarta(carta) {
-      // Ignora tap se bloccato, se è la carta già girata o se è già abbinata
-      if (bloccato || carta === primaCarta) return;
-      if (carta.classList.contains("flip") || carta.classList.contains("match")) return;
-
-      carta.classList.add("flip");
-      BB.sound("pop");
-
-      if (!primaCarta) {
-        primaCarta = carta;
-        return;
-      }
-
-      // Seconda carta: conta la mossa e confronta
-      mosse++;
-      aggiornaInfo();
-      bloccato = true;
-
-      if (primaCarta.dataset.emoji === carta.dataset.emoji) {
-        // Coppia trovata!
-        setTimeout(function () {
-          primaCarta.classList.add("match");
-          carta.classList.add("match");
-          BB.sound("match");
-          coppieTrovate++;
-          primaCarta = null;
-          bloccato = false;
-          if (coppieTrovate === totaleCoppie) finePartita();
-        }, 300);
-      } else {
-        // Errore: gira di nuovo a coperta dopo una breve pausa
-        BB.sound("error");
-        var a = primaCarta, b = carta;
-        a.classList.add("wrong"); b.classList.add("wrong");
-        setTimeout(function () {
-          a.classList.remove("flip", "wrong");
-          b.classList.remove("flip", "wrong");
-          primaCarta = null;
-          bloccato = false;
-        }, 800);
-      }
-    }
-
-    function finePartita() {
-      // Record = mosse minime (meno è meglio); salviamo come negativo? No:
-      // qui mostriamo solo le mosse fatte. Il "record" è il minor numero mosse.
-      var precedente = BB.score("memory.best.moves");
-      var record;
-      // 0 significa "mai giocato"; per i minimi gestiamo a mano
-      if (precedente === 0 || mosse < precedente) {
-        try { localStorage.setItem("bb.kidsfunplanet.score.memory.best.moves", String(mosse)); } catch (e) {}
-        record = mosse;
-      } else {
-        record = precedente;
-      }
-      setTimeout(function () {
-        BB.win({
-          mascotte: "../assets/mascotte/stella.svg",
-          titolo: "Bravo!",
-          punteggio: mosse + " mosse",
-          record: record + " mosse (migliore)",
-          rigioca: nuovaPartita
-        });
-      }, 500);
-    }
-
-    nuovaPartita();
   </script>
+  <script src="script.js"></script>
 </body>
 </html>
