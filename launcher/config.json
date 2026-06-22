@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 11,
-  "updatedAt": "2026-06-22T15:00:00.000Z",
+  "configVersion": 12,
+  "updatedAt": "2026-06-22T20:04:00.758Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
@@ -38,6 +38,7 @@
     "games": [
       {
         "id": "memory",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/memory/index.html",
         "displayName": "Abbina le Coppie",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/mascotte/stella.png",
@@ -48,6 +49,7 @@
       },
       {
         "id": "talpe",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/talpe/index.html",
         "displayName": "Acchiappa la Talpa",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/mascotte/kip.png",
@@ -58,6 +60,7 @@
       },
       {
         "id": "palloncini",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/palloncini/index.html",
         "displayName": "Scoppia i Palloncini",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/mascotte/bolt.png",
@@ -78,7 +81,7 @@
       ]
     },
     "update": {
-      "latestVersionCode": 2,
+      "latestVersionCode": 3,
       "apkUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/apk/launcher-latest.apk",
       "silentInstall": true
     },
