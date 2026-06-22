@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "configVersion": 13,
-  "updatedAt": "2026-06-22T21:50:00.000Z",
+  "configVersion": 14,
+  "updatedAt": "2026-06-22T22:15:00.000Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
       "appTitle": "Benvenuti a Kids Fun Planet!",
       "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/logo.png",
-      "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-default.png",
+      "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-home.png",
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
       "language": "it"
