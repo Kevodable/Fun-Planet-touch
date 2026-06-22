@@ -1,0 +1,7 @@
+# Artefatti di build / file locali da non versionare
+*.apk
+*.aab
+*.idsig
+
+# macOS
+.DS_Store
