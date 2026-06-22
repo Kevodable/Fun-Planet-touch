@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 7,
-  "updatedAt": "2026-06-22T10:33:16.330Z",
+  "configVersion": 8,
+  "updatedAt": "2026-06-22T10:35:00.508Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
@@ -30,9 +30,9 @@
       "status": "active",
       "maintenanceMessage": "In manutenzione. Torniamo subito",
       "banner": {
-        "enabled": true,
+        "enabled": false,
         "text": "Ciao!!",
-        "imageUrl": "https://pin.it/4ZjwGahMF"
+        "imageUrl": ""
       }
     },
     "games": [
