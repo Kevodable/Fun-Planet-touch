@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 5,
-  "updatedAt": "2026-06-21T21:17:37.764Z",
+  "configVersion": 6,
+  "updatedAt": "2026-06-22T10:31:10.014Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
@@ -18,7 +18,7 @@
       "showLabels": true
     },
     "kiosk": {
-      "enabled": true,
+      "enabled": false,
       "exitPin": "4271",
       "idleTimeoutSeconds": 60,
       "sessionLimitSeconds": 0,
@@ -32,7 +32,7 @@
       "banner": {
         "enabled": false,
         "text": "Ciao!!",
-        "imageUrl": ""
+        "imageUrl": "https://pin.it/4ZjwGahMF"
       }
     },
     "games": [
