@@ -134,13 +134,32 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
     // installed, those drive the grid (remote control); otherwise we fall back to the
     // locally chosen games so the app keeps working with no or stale config.
     val installedByPkg = remember(allApps) { allApps.associateBy { it.packageName } }
-    val remoteGames = config?.games.orEmpty()
+    // Giochi nativi gestiti da remoto: pacchetti effettivamente installati sul device.
+    val remoteNativeGames = config?.games.orEmpty()
         .filter { it.visible && it.packageName != null && installedByPkg.containsKey(it.packageName) }
-    val usingRemoteGames = remoteGames.isNotEmpty()
+    // Giochi web gestiti da remoto: hanno un `url` e vengono aperti nella WebView interna
+    // (WebGameActivity), quindi non richiedono installazione né package locale.
+    val remoteWebGames = config?.games.orEmpty()
+        .filter { it.visible && it.url != null }
+    val usingRemoteGames = remoteNativeGames.isNotEmpty() || remoteWebGames.isNotEmpty()
     val effectiveGames: List<GameApp> = if (usingRemoteGames) {
-        remoteGames.map { rg ->
-            val base = installedByPkg[rg.packageName]!!
-            if (rg.displayName != null) base.copy(label = rg.displayName) else base
+        // Rispetta l'ordine definito nel config; per ogni voce crea la tile giusta
+        // (nativa se il package è installato, web se è presente l'url).
+        config?.games.orEmpty().filter { it.visible }.mapNotNull { rg ->
+            when {
+                rg.url != null -> GameApp(
+                    packageName = "web:" + rg.id,   // chiave sintetica univoca per la griglia
+                    label = rg.displayName ?: rg.id,
+                    icon = null,
+                    url = rg.url,
+                    iconUrl = rg.iconUrl,
+                )
+                rg.packageName != null && installedByPkg.containsKey(rg.packageName) -> {
+                    val base = installedByPkg[rg.packageName]!!
+                    base.copy(label = rg.displayName ?: base.label, iconUrl = rg.iconUrl)
+                }
+                else -> null
+            }
         }
     } else {
         allApps.filter { it.packageName in selectedPackages }
@@ -152,7 +171,9 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
     val managedPackages = config?.managedApps.orEmpty()
         .filter { it.action != "uninstall" && installedByPkg.containsKey(it.packageName) }
         .map { it.packageName }.toSet()
-    val baseAllowed = if (usingRemoteGames) remoteGames.mapNotNull { it.packageName }.toSet() else selectedPackages
+    // I giochi web girano dentro il nostro stesso package (sempre permesso nel lock task),
+    // quindi alla whitelist servono solo i package dei giochi nativi.
+    val baseAllowed = if (usingRemoteGames) remoteNativeGames.mapNotNull { it.packageName }.toSet() else selectedPackages
     val allowedPackages = baseAllowed + managedPackages
     LaunchedEffect(allowedPackages) { KioskManager.syncAllowedPackages(context, allowedPackages) }
 
@@ -194,14 +215,23 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
                     showLabels = config?.layout?.showLabels ?: true,
                     banner = operational?.banner,
                     branding = config?.branding,
-                    onPlay = { pkg ->
-                        fleetApp.telemetryManager.recordGameLaunch(pkg)
-                        if (InstalledAppsRepository.launch(context, pkg)) {
+                    onPlay = { game ->
+                        fleetApp.telemetryManager.recordGameLaunch(game.packageName)
+                        // Giochi web → WebView interna; giochi nativi → lancio del package.
+                        val launched = if (game.url != null) {
+                            WebGameActivity.launch(context, game.url); true
+                        } else {
+                            InstalledAppsRepository.launch(context, game.packageName)
+                        }
+                        if (launched) {
                             // Show the floating "back to games" button on top of the game so the
                             // child can always return to the grid (even in kiosk, where Home is blocked).
                             FloatingHomeButton.show(context)
                             // Start the session limit: a per-game limit (if set) wins over the global one.
-                            val perGame = config?.games?.firstOrNull { it.packageName == pkg }?.sessionLimitSeconds ?: 0
+                            // Per i giochi web la chiave è "web:<id>", quindi confrontiamo entrambe le forme.
+                            val perGame = config?.games?.firstOrNull {
+                                it.packageName == game.packageName || ("web:" + it.id) == game.packageName
+                            }?.sessionLimitSeconds ?: 0
                             val limit = if (perGame > 0) perGame else (config?.kiosk?.sessionLimitSeconds ?: 0)
                             SessionTimer.start(context, limit)
                         } else {
@@ -307,7 +337,7 @@ private fun HomeScreen(
     showLabels: Boolean,
     banner: Banner?,
     branding: Branding?,
-    onPlay: (String) -> Unit,
+    onPlay: (GameApp) -> Unit,
     onRequestSettings: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -361,7 +391,7 @@ private fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     items(games, key = { it.packageName }) { game ->
-                        GameTile(game = game, showLabel = showLabels, onClick = { onPlay(game.packageName) })
+                        GameTile(game = game, showLabel = showLabels, onClick = { onPlay(game) })
                     }
                 }
             }
@@ -379,11 +409,31 @@ private fun GameTile(game: GameApp, showLabel: Boolean, onClick: () -> Unit) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        AndroidView(
-            factory = { ctx -> ImageView(ctx) },
-            update = { it.setImageDrawable(game.icon) },
-            modifier = Modifier.size(96.dp),
-        )
+        // Icona: drawable dell'app nativa; per i giochi web carica l'immagine
+        // remota (iconUrl) e, se assente, mostra il logo come ripiego.
+        var remoteIcon by remember(game.iconUrl) { mutableStateOf<android.graphics.Bitmap?>(null) }
+        LaunchedEffect(game.iconUrl) {
+            if (game.icon == null && game.iconUrl != null) remoteIcon = RemoteImageLoader.load(game.iconUrl)
+        }
+        when {
+            game.icon != null -> AndroidView(
+                factory = { ctx -> ImageView(ctx) },
+                update = { it.setImageDrawable(game.icon) },
+                modifier = Modifier.size(96.dp),
+            )
+            remoteIcon != null -> Image(
+                bitmap = remoteIcon!!.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(96.dp),
+            )
+            else -> Image(
+                painter = painterResource(id = R.drawable.logo_fun_planet),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(96.dp),
+            )
+        }
         if (showLabel) {
             Spacer(Modifier.height(8.dp))
             Text(

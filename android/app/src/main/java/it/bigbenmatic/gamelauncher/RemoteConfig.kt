@@ -43,6 +43,7 @@ data class Operational(
 data class RemoteGame(
     val id: String,
     val packageName: String?,
+    val url: String?,          // se valorizzato: gioco web aperto nella WebView interna
     val displayName: String?,
     val iconUrl: String?,
     val category: String?,
@@ -256,6 +257,7 @@ object RemoteConfigParser {
             RemoteGame(
                 id = g.optString("id"),
                 packageName = g.optStringOrNull("package"),
+                url = g.optStringOrNull("url"),
                 displayName = g.optStringOrNull("displayName"),
                 iconUrl = g.optStringOrNull("iconUrl"),
                 category = g.optStringOrNull("category"),

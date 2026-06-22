@@ -180,15 +180,40 @@ device (touch), prova sia landscape che portrait.
 
 ## Contratto launcher ↔ giochi
 
-Il launcher Android carica i giochi in un WebView. L'unico punto di contatto è
-la funzione di **ritorno alla home**:
+Il launcher Android (cartella `android/`, app device-owner in modalità kiosk)
+apre ogni gioco web in una **WebView interna** alla sua stessa app
+(`WebGameActivity`). Così i giochi girano dentro il lock task senza installare
+APK aggiuntive e si gestiscono **interamente da remoto** via `config.json`.
 
-- **Interfaccia attesa**: il launcher espone nel WebView un oggetto JavaScript
-  globale `window.AndroidLauncher` con il metodo:
+**Come si aggiunge un gioco web al launcher:** in `launcher/config.json` (anche
+dal pannello `admin.html`) si aggiunge una voce `games[]` con il campo `url`
+invece del `package` nativo. Nel kiosk la **griglia nativa del launcher fa da
+gallery**, quindi di norma si elenca direttamente ogni gioco (es.
+`big-ben-giochi/memory/index.html`).
+
+```json
+{
+  "id": "memory",
+  "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/memory/index.html",
+  "displayName": "Abbina le Coppie",
+  "iconUrl": "https://…/icona.png",
+  "order": 10,
+  "visible": true,
+  "sessionLimitSeconds": 0
+}
+```
+
+**Punto di contatto — ritorno alla griglia:**
+
+- **Interfaccia esposta dal launcher**: dentro la WebView è disponibile un
+  oggetto JavaScript globale `window.AndroidLauncher` con il metodo:
 
   ```js
-  window.AndroidLauncher.goHome()   // riporta il bambino alla griglia del launcher
+  window.AndroidLauncher.goHome()   // chiude la WebView e torna alla griglia del launcher
   ```
+
+  In più, restano attivi il **pulsante flottante "Torna ai giochi"** e il
+  **timer di sessione** del launcher, che riportano comunque alla griglia.
 
 - **Comportamento dei giochi**: alla pressione di **← Esci** (o al termine del
   timer di inattività), il gioco chiama `BB.home()`, che:
@@ -199,8 +224,12 @@ la funzione di **ritorno alla home**:
      cioè alla **gallery** di questa cartella.
 
 Questo fallback fa sì che i giochi siano pienamente navigabili anche fuori dal
-kiosk (test, uso web), senza modifiche al codice.
+kiosk (test, uso web): aprendo direttamente la cartella in un browser, **← Esci**
+torna alla gallery web (`index.html`).
 
-> La gallery (`index.html`) legge `giochi.json` via `fetch`; lo stesso manifest
-> può essere consumato dal launcher per costruire la propria griglia nativa.
-> Mantenere `giochi.json` come unica fonte di verità dell'elenco giochi.
+> **Due elenchi, due usi.** `giochi.json` è il manifest della **gallery web**
+> (`index.html`, uso fuori kiosk / fallback). Nel **kiosk**, invece, l'elenco
+> dei giochi mostrati è quello di `launcher/config.json` (voci `games[]` con
+> `url`), gestito da remoto. Aggiungendo un nuovo gioco web, ricordati di
+> inserirlo in **entrambi** se vuoi che compaia sia nella gallery web sia nel
+> launcher.
