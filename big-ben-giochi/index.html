@@ -25,7 +25,7 @@
       padding:22px 18px 10px;
       text-align:center;
     }
-    .gallery__logo{ font-size:clamp(34px,8vmin,64px); line-height:1; }
+    .gallery__logo{ height:clamp(48px,11vmin,96px); width:auto; display:block; }
     .gallery__title{
       font-size:clamp(24px,6vmin,44px);
       font-weight:900;
@@ -69,6 +69,9 @@
     }
     .tile:active{ transform:scale(.94); }
     .tile__icon{ font-size:clamp(48px,12vmin,92px); line-height:1; }
+    /* Icona-mascotte (immagine) al posto dell'emoji */
+    .tile__img{ height:clamp(72px,18vmin,128px); width:auto; display:block;
+      filter:drop-shadow(0 6px 10px rgba(0,0,0,.18)); }
     .tile__name{ font-size:clamp(18px,3.6vmin,28px); font-weight:900; }
     .tile__desc{
       font-size:clamp(12px,2.4vmin,17px);
@@ -90,7 +93,7 @@
   <div class="bb-screen">
     <div class="gallery">
       <div class="gallery__head">
-        <span class="gallery__logo">🌈</span>
+        <img class="gallery__logo" src="assets/logo.svg" alt="Kids Fun Planet">
         <span class="gallery__title">Kids Fun Planet</span>
       </div>
       <div class="gallery__subtitle">Scegli un gioco e divertiti!</div>
@@ -117,8 +120,12 @@
       var tile = document.createElement("button");
       tile.className = "tile";
       tile.style.background = gioco.colore || "var(--bb-pink)";
+      // Icona: mascotte (immagine) se presente, altrimenti emoji
+      var icona = gioco.iconImg
+        ? '<img class="tile__img" src="' + gioco.iconImg + '" alt="">'
+        : '<span class="tile__icon">' + (gioco.icona || "🎮") + "</span>";
       tile.innerHTML =
-        '<span class="tile__icon">' + (gioco.icona || "🎮") + "</span>" +
+        icona +
         '<span class="tile__name">' + gioco.nome + "</span>" +
         (gioco.descrizione
           ? '<span class="tile__desc">' + gioco.descrizione + "</span>"

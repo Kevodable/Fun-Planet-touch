@@ -172,6 +172,14 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
   animation:bb-pop .4s var(--bb-ease-elastic) both;
 }
 .bb-overlay__emoji{ font-size:clamp(56px,16vmin,110px); line-height:1; }
+/* Mascotte nell'overlay vittoria: entra con un rimbalzo allegro */
+.bb-overlay__mascotte{
+  width:clamp(120px,30vmin,190px);
+  height:auto;
+  display:block;
+  margin:0 auto;
+  animation:bb-pop .5s var(--bb-ease-elastic) both;
+}
 .bb-overlay__title{
   margin:10px 0 6px;
   font-size:clamp(26px,6vmin,42px);

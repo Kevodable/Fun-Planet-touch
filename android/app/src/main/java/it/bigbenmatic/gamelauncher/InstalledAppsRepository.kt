@@ -7,9 +7,11 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 
 data class GameApp(
-    val packageName: String,
+    val packageName: String,        // app native: package reale; giochi web: "web:<id>"
     val label: String,
-    val icon: Drawable,
+    val icon: Drawable?,            // null per i giochi web (icona via iconUrl)
+    val url: String? = null,        // se valorizzato: gioco web aperto nella WebView interna
+    val iconUrl: String? = null,    // icona remota per i giochi web
 )
 
 /** Lists launchable apps on the device, excluding this launcher itself. */

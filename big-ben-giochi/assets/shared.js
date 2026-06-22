@@ -138,7 +138,8 @@
     },
 
     /* Mostra un overlay di vittoria / fine partita.
-       opzioni: { emoji, titolo, punteggio, record, rigioca() }
+       opzioni: { emoji, mascotte, titolo, punteggio, record, rigioca() }
+       - "mascotte" (URL immagine, es. una mascotte SVG) ha priorità sull'emoji
        - "Rigioca" chiama opzioni.rigioca() e nasconde l'overlay
        - "Esci" chiama BB.home() */
     win: function (opzioni) {
@@ -161,9 +162,13 @@
         righe += '<div class="bb-overlay__score">🏆 Record: ' +
                  opzioni.record + "</div>";
       }
+      /* Personaggio: mascotte (immagine) se fornita, altrimenti emoji */
+      var personaggio = opzioni.mascotte
+        ? '<img class="bb-overlay__mascotte" src="' + opzioni.mascotte + '" alt="">'
+        : '<div class="bb-overlay__emoji">' + (opzioni.emoji || "🎉") + "</div>";
       ov.innerHTML =
         '<div class="bb-overlay__card">' +
-          '<div class="bb-overlay__emoji">' + (opzioni.emoji || "🎉") + "</div>" +
+          personaggio +
           '<div class="bb-overlay__title">' + (opzioni.titolo || "Bravo!") + "</div>" +
           righe +
           '<div class="bb-overlay__actions">' +

@@ -403,11 +403,16 @@ function renderGames(){
     const fName=fieldInput("Nome mostrato", g.displayName);
     r1.append(fId,fPkg,fName); box.appendChild(r1);
     const r2=document.createElement("div"); r2.className="row";
+    // Gioco web: indica un URL (HTML su Pages) invece del package nativo.
+    // Si valorizza SOLO uno tra "Package Android" e "URL gioco web".
+    const fUrl=fieldInput("URL gioco web (vuoto = gioco nativo)", g.url, {placeholder:"https://…/index.html"});
     const fIcon=fieldInput("URL icona", g.iconUrl);
     const fCat=fieldInput("Categoria", g.category);
+    r2.append(fUrl,fIcon,fCat); box.appendChild(r2);
+    const r2b=document.createElement("div"); r2b.className="row";
     const fOrder=fieldInput("Ordine", g.order ?? 0, {type:"number"});
     const fLimit=fieldInput("Limite sessione (s, 0=usa globale)", g.sessionLimitSeconds ?? 0, {type:"number"});
-    r2.append(fIcon,fCat,fOrder,fLimit); box.appendChild(r2);
+    r2b.append(fOrder,fLimit); box.appendChild(r2b);
     const r3=document.createElement("div"); r3.style.marginTop="6px";
     const fVis=fieldInput("", g.visible!==false, {type:"checkbox"});
     fVis.style.display="inline-flex"; fVis.style.gap="6px"; fVis.querySelector("span").textContent="";
@@ -416,6 +421,7 @@ function renderGames(){
     r3.appendChild(visWrap); box.appendChild(r3);
     box.__get=()=>({
       id:fId.__input.value.trim(), package:fPkg.__input.value.trim()||null,
+      url:fUrl.__input.value.trim()||null,
       displayName:fName.__input.value.trim()||null, iconUrl:fIcon.__input.value.trim()||null,
       category:fCat.__input.value.trim()||null, order:Number(fOrder.__input.value)||0,
       visible:fVis.__input.checked, sessionLimitSeconds:Number(fLimit.__input.value)||0

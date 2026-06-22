@@ -82,6 +82,8 @@
       text-align:center;
     }
     .start__emoji{ font-size:clamp(60px,18vmin,130px); }
+    .start__img{ width:clamp(120px,28vmin,200px); height:auto;
+      filter:drop-shadow(0 8px 14px rgba(0,0,0,.2)); }
     .start__txt{ font-size:clamp(20px,5vmin,34px); font-weight:900; color:var(--bb-burgundy); }
   </style>
 </head>
@@ -93,7 +95,7 @@
 
       <!-- Schermata iniziale "Tocca per giocare" -->
       <div class="start" id="start">
-        <div class="start__emoji">🐹</div>
+        <img class="start__img" src="../assets/mascotte/kip.svg" alt="">
         <div class="start__txt">Colpisci le talpe!<br>Hai 60 secondi.</div>
         <button class="bb-btn bb-btn--blue" id="startBtn">▶ Inizia</button>
       </div>
@@ -196,9 +198,11 @@
       if (attiva >= 0) buche[attiva].classList.remove("su");
 
       var record = BB.score("talpe", punteggio);
+      var nuovoRecord = punteggio > 0 && punteggio >= record;
       BB.win({
-        emoji: punteggio >= record ? "🏆" : "🐹",
-        titolo: "Tempo scaduto!",
+        mascotte: nuovoRecord ? null : "../assets/mascotte/kip.svg",
+        emoji: nuovoRecord ? "🏆" : null,
+        titolo: nuovoRecord ? "Nuovo record!" : "Tempo scaduto!",
         punteggio: punteggio + " talpe",
         record: record,
         rigioca: avvia
