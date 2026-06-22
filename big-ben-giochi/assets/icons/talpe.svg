@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Icona gioco "Acchiappa la Talpa": talpa che spunta da una buca + martello. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="Talpe">
+  <circle cx="110" cy="110" r="100" fill="#FFFFFF" stroke="#DBE2F5" stroke-width="3"/>
+  <!-- erba/terreno -->
+  <path d="M30 150 Q110 132 190 150 L190 178 Q110 162 30 178 Z" fill="#7BCB4F"/>
+  <!-- buca -->
+  <ellipse cx="98" cy="150" rx="48" ry="18" fill="#5A3A2A"/>
+  <ellipse cx="98" cy="147" rx="40" ry="13" fill="#3A2418"/>
+  <!-- talpa -->
+  <ellipse cx="98" cy="128" rx="30" ry="30" fill="#9B8579"/>
+  <ellipse cx="98" cy="140" rx="22" ry="18" fill="#C9B7AC"/>
+  <circle cx="88" cy="124" r="5.5" fill="#2A1622"/>
+  <circle cx="108" cy="124" r="5.5" fill="#2A1622"/>
+  <ellipse cx="98" cy="136" rx="7" ry="5" fill="#E8488B"/>
+  <!-- martello -->
+  <g transform="rotate(24 158 96)">
+    <rect x="150" y="92" width="14" height="64" rx="6" fill="#7A1F3D"/>
+    <rect x="132" y="66" width="50" height="30" rx="9" fill="#2E5BFF"/>
+    <rect x="132" y="66" width="50" height="30" rx="9" fill="none" stroke="#1E40D8" stroke-width="3"/>
+  </g>
+</svg>

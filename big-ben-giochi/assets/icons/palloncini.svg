@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Icona gioco "Scoppia i Palloncini": grappolo di palloncini colorati. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="Palloncini">
+  <circle cx="110" cy="110" r="100" fill="#FFFFFF" stroke="#EADFE6" stroke-width="3"/>
+  <!-- fili -->
+  <path d="M86 118 Q98 150 110 178" fill="none" stroke="#9A8A93" stroke-width="3"/>
+  <path d="M134 112 Q124 150 110 178" fill="none" stroke="#9A8A93" stroke-width="3"/>
+  <path d="M110 124 Q110 150 110 178" fill="none" stroke="#9A8A93" stroke-width="3"/>
+  <!-- palloncino blu -->
+  <ellipse cx="84" cy="92" rx="30" ry="36" fill="#2E5BFF"/>
+  <path d="M84 126 l-7 10 14 0 Z" fill="#2E5BFF"/>
+  <ellipse cx="75" cy="80" rx="8" ry="11" fill="#FFFFFF" opacity=".5"/>
+  <!-- palloncino giallo -->
+  <ellipse cx="136" cy="86" rx="30" ry="36" fill="#FFD23F"/>
+  <path d="M136 120 l-7 10 14 0 Z" fill="#FFD23F"/>
+  <ellipse cx="127" cy="74" rx="8" ry="11" fill="#FFFFFF" opacity=".55"/>
+  <!-- palloncino rosa (davanti) -->
+  <ellipse cx="110" cy="104" rx="33" ry="40" fill="#E8488B"/>
+  <path d="M110 142 l-8 11 16 0 Z" fill="#E8488B"/>
+  <ellipse cx="100" cy="90" rx="9" ry="12" fill="#FFFFFF" opacity=".5"/>
+</svg>

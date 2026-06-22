@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "configVersion": 11,
-  "updatedAt": "2026-06-22T15:00:00.000Z",
+  "configVersion": 12,
+  "updatedAt": "2026-06-22T16:00:00.000Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
       "appTitle": "Benvenuti a Kids Fun Planet!",
       "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/logo.png",
-      "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-default.jpg",
+      "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-default.png",
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
       "language": "it"
@@ -40,7 +40,7 @@
         "id": "memory",
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/memory/index.html",
         "displayName": "Abbina le Coppie",
-        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/mascotte/stella.png",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/memory.png",
         "category": "Giochi web",
         "order": 10,
         "visible": true,
@@ -50,7 +50,7 @@
         "id": "talpe",
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/talpe/index.html",
         "displayName": "Acchiappa la Talpa",
-        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/mascotte/kip.png",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/talpe.png",
         "category": "Giochi web",
         "order": 11,
         "visible": true,
@@ -60,7 +60,7 @@
         "id": "palloncini",
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/palloncini/index.html",
         "displayName": "Scoppia i Palloncini",
-        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/mascotte/bolt.png",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/palloncini.png",
         "category": "Giochi web",
         "order": 12,
         "visible": true,
