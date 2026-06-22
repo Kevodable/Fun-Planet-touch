@@ -1,0 +1,32 @@
+[
+  {
+    "id": "memory",
+    "nome": "Abbina le Coppie",
+    "cartella": "memory",
+    "icona": "🧠",
+    "colore": "#E8488B",
+    "minEta": 3,
+    "descrizione": "Trova tutte le coppie uguali",
+    "attivo": true
+  },
+  {
+    "id": "talpe",
+    "nome": "Acchiappa la Talpa",
+    "cartella": "talpe",
+    "icona": "🐹",
+    "colore": "#2E5BFF",
+    "minEta": 4,
+    "descrizione": "Colpisci le talpe che spuntano",
+    "attivo": true
+  },
+  {
+    "id": "palloncini",
+    "nome": "Scoppia i Palloncini",
+    "cartella": "palloncini",
+    "icona": "🎈",
+    "colore": "#7A1F3D",
+    "minEta": 3,
+    "descrizione": "Tocca i palloncini per scoppiarli",
+    "attivo": true
+  }
+]
