@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 9,
-  "updatedAt": "2026-06-22T13:00:00.000Z",
+  "configVersion": 10,
+  "updatedAt": "2026-06-22T14:00:00.000Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
@@ -98,7 +98,7 @@
       ]
     },
     "update": {
-      "latestVersionCode": 1,
+      "latestVersionCode": 2,
       "apkUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/apk/launcher-latest.apk",
       "silentInstall": true
     },
