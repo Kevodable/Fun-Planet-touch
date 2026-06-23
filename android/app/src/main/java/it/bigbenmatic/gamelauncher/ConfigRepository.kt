@@ -63,10 +63,15 @@ class ConfigRepository(context: Context) {
     }
 
     private fun download(urlString: String): String {
-        val connection = URL(urlString).openConnection() as HttpURLConnection
+        // Cache-busting + niente cache: evita di ricevere una copia vecchia da CDN/cache.
+        val busted = urlString + (if (urlString.contains("?")) "&" else "?") + "t=" + System.currentTimeMillis()
+        val connection = URL(busted).openConnection() as HttpURLConnection
         connection.connectTimeout = 10_000
         connection.readTimeout = 10_000
         connection.requestMethod = "GET"
+        connection.useCaches = false
+        connection.setRequestProperty("Cache-Control", "no-cache")
+        connection.setRequestProperty("Pragma", "no-cache")
         return try {
             connection.inputStream.bufferedReader().use { it.readText() }
         } finally {

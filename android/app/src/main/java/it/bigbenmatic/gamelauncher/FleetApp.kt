@@ -94,8 +94,11 @@ class FleetApp : Application() {
                 runCatching { configRepository.refresh() }
                 runCatching { applyWifi() }
                 runCatching { applyManagedApps() }
+                val online = configRepository.connectionStatus.value == ConnectionStatus.ONLINE
                 val minutes = configRepository.config.value?.pollIntervalMinutes?.takeIf { it > 0 } ?: 15
-                delay(minutes * 60_000L)
+                // Se offline (es. WiFi non ancora pronto subito dopo il riavvio) riprova presto;
+                // altrimenti usa l'intervallo normale.
+                delay(if (online) minutes * 60_000L else 20_000L)
             }
         }
     }
