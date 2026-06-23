@@ -85,6 +85,7 @@
     .start__img{ width:clamp(120px,28vmin,200px); height:auto;
       filter:drop-shadow(0 8px 14px rgba(0,0,0,.2)); }
     .start__txt{ font-size:clamp(20px,5vmin,34px); font-weight:900; color:var(--bb-burgundy); }
+    .liv-row{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
   </style>
 </head>
 <body>
@@ -93,11 +94,15 @@
     <div class="bb-stage">
       <div class="board" id="board"></div>
 
-      <!-- Schermata iniziale "Tocca per giocare" -->
+      <!-- Schermata iniziale: scelta difficoltà -->
       <div class="start" id="start">
         <img class="start__img" src="../assets/mascotte/kip.png" alt="">
-        <div class="start__txt">Colpisci le talpe!<br>Hai 60 secondi.</div>
-        <button class="bb-btn bb-btn--blue" id="startBtn">▶ Inizia</button>
+        <div class="start__txt">Colpisci le talpe!<br>Scegli la difficoltà:</div>
+        <div class="liv-row">
+          <button class="bb-btn bb-btn--blue liv-btn" data-liv="facile">😊 Facile</button>
+          <button class="bb-btn bb-btn--blue liv-btn" data-liv="medio">😎 Medio</button>
+          <button class="bb-btn bb-btn--blue liv-btn" data-liv="difficile">🔥 Difficile</button>
+        </div>
       </div>
     </div>
   </div>
@@ -112,15 +117,14 @@
     var startScreen = document.getElementById("start");
     var DURATA = 60;          // secondi di partita
 
-    // Difficoltà regolabile via URL: ?liv=facile|medio|difficile (default facile).
-    // base = ms iniziali in cui la talpa resta su; min = limite minimo; scal = quanto
-    // accelera per ogni punto. Si imposta per gioco dall'admin aggiungendo ?liv=... all'URL.
-    var LIV = (new URLSearchParams(location.search).get("liv") || "facile").toLowerCase();
-    var DIFF = ({
+    // Difficoltà scelta dal bambino a inizio partita (pulsanti nella schermata start).
+    // base = ms iniziali in cui la talpa resta su; min = limite minimo; scal = accelerazione.
+    var TAB = {
       facile:    { base: 1200, min: 600, scal: 12 },
       medio:     { base: 900,  min: 380, scal: 18 },
       difficile: { base: 680,  min: 260, scal: 24 }
-    })[LIV] || { base: 1200, min: 600, scal: 12 };
+    };
+    var DIFF = TAB.facile;
     var punteggio = 0;
     var tempo = DURATA;
     var buche = [];           // i 9 elementi buca
@@ -184,7 +188,10 @@
       setTimeout(function () { plus.remove(); }, 600);
     }
 
-    function avvia() {
+    function mostraStart() { startScreen.classList.remove("bb-hidden"); }
+
+    function avvia(liv) {
+      if (TAB[liv]) DIFF = TAB[liv];   // difficoltà scelta dal bambino
       startScreen.classList.add("bb-hidden");
       punteggio = 0;
       tempo = DURATA;
@@ -215,11 +222,14 @@
         titolo: nuovoRecord ? "Nuovo record!" : "Tempo scaduto!",
         punteggio: punteggio + " talpe",
         record: record,
-        rigioca: avvia
+        rigioca: mostraStart        // torna alla scelta della difficoltà
       });
     }
 
-    document.getElementById("startBtn").addEventListener("click", avvia);
+    // Pulsanti difficoltà: ognuno avvia la partita al suo livello
+    Array.prototype.forEach.call(document.querySelectorAll(".liv-btn"), function (b) {
+      b.addEventListener("click", function () { avvia(b.dataset.liv); });
+    });
   </script>
 </body>
 </html>
