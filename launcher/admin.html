@@ -241,11 +241,13 @@
 
     <!-- DISPOSITIVI -->
     <div class="card">
-      <h2>11 · Impostazioni per singolo monitor (avanzato)</h2>
+      <h2>11 · Impostazioni per singolo monitor (per locale)</h2>
       <p class="hint">
-        Override applicati solo a un tablet specifico, identificato dal suo <b>ID dispositivo</b>
-        (lo leggi dalla schermata Diagnostica). Negli "override" metti solo i campi da cambiare
-        rispetto ai default, in formato JSON. Lascia vuoto se non ti serve.
+        Le sezioni qui sopra valgono per <b>tutta la flotta</b>. Qui invece imposti modifiche
+        <b>solo per un tablet</b>: aggiungi il suo <b>ID dispositivo</b> (lo leggi dalla schermata
+        Diagnostica) e compila ciò che vuoi diverso per quel locale — <b>branding</b> (titolo,
+        colori, logo, sfondo) e <b>quali giochi mostrare</b>. I campi lasciati vuoti / le caselle
+        non toccate ereditano i default della flotta.
       </p>
       <div id="devices-list"></div>
       <button class="ghost small" id="btn-add-device">+ Aggiungi monitor</button>
@@ -569,11 +571,30 @@ function renderDevices(){
     fLogo.appendChild(uploadButton(url=>{ fLogo.__input.value=url; refreshPreview(); }, "⬆ Carica logo"));
     r3.append(fBg,fLogo); box.appendChild(r3);
 
-    // Override avanzato: tutto il resto (games, kiosk…), escluso label e branding
-    const rest=Object.assign({}, ov); delete rest.label; delete rest.branding;
-    const fJson=fieldInput("Override avanzato (JSON opzionale: games, kiosk…)",
+    // --- Giochi visibili SOLO su questo tablet (caselle) ---
+    // Spunta = mostrato; togli la spunta = nascosto su questo tablet.
+    const defGames=((state.config.defaults&&state.config.defaults.games)||[]).filter(g=>g.id);
+    const ovGames=Array.isArray(ov.games)?ov.games:[];
+    const ovById={}; ovGames.forEach(g=>{ if(g&&g.id) ovById[g.id]=g; });
+    const gamesBox=document.createElement("div"); gamesBox.style.margin="6px 0";
+    const gh=document.createElement("div"); gh.textContent="Giochi visibili su questo tablet:";
+    gh.style.cssText="font-size:12px;color:#666;margin-bottom:4px"; gamesBox.appendChild(gh);
+    const gameChecks=defGames.map(g=>{
+      const defVis=(g.visible!==false);
+      const eff=(ovById[g.id]&&ovById[g.id].visible!=null)?ovById[g.id].visible:defVis;
+      const lab=document.createElement("label"); lab.className="inline"; lab.style.marginRight="14px";
+      const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=eff;
+      lab.append(cb, document.createTextNode(" "+(g.displayName||g.id)));
+      gamesBox.appendChild(lab);
+      return {id:g.id, cb, defVis};
+    });
+    if(defGames.length) box.appendChild(gamesBox);
+
+    // Override avanzato: il resto (kiosk…), escluso label, branding e games
+    const rest=Object.assign({}, ov); delete rest.label; delete rest.branding; delete rest.games;
+    const fJson=fieldInput("Override avanzato (JSON opzionale: kiosk…)",
       Object.keys(rest).length?JSON.stringify(rest,null,2):"", {textarea:true,
-      placeholder:'{ "games": [ { "id": "memory", "visible": false } ] }'});
+      placeholder:'{ "kiosk": { "sessionLimitSeconds": 300 } }'});
     box.appendChild(fJson);
 
     box.__get=()=>{
@@ -588,6 +609,10 @@ function renderDevices(){
       const pc=fPrimary.__input.value.trim(); if(pc) br.primaryColor=pc;
       const ac=fAccent.__input.value.trim(); if(ac) br.accentColor=ac;
       if(Object.keys(br).length) over.branding=br;
+      // giochi: salva solo le differenze rispetto al default (nascosti/mostrati)
+      const gp=[];
+      gameChecks.forEach(gc=>{ if(gc.cb.checked!==gc.defVis) gp.push({id:gc.id, visible:gc.cb.checked}); });
+      if(gp.length) over.games=gp;
       return [key, over];
     };
     wrap.appendChild(box);
