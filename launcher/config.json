@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 20,
-  "updatedAt": "2026-06-23T13:10:00.000Z",
+  "configVersion": 21,
+  "updatedAt": "2026-06-23T14:00:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -112,7 +112,6 @@
     "256e7f33-196d-4bd4-ba90-33d7da081284": {
       "label": "Test big ben",
       "branding": {
-        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-ingresso.jpg",
         "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/lego_logo-svg-1782217768432.png"
       }
     }
