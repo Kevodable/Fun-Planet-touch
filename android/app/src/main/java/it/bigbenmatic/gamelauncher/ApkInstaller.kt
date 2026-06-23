@@ -54,6 +54,13 @@ object ApkInstaller {
     private fun installFile(context: Context, apk: File) {
         val installer = context.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+        // Android 12+ richiede di dichiarare esplicitamente che non serve conferma utente:
+        // da Device Owner così l'installazione/aggiornamento è davvero SILENZIOSA (OTA automatico).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            runCatching {
+                params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+            }
+        }
         val sessionId = installer.createSession(params)
         installer.openSession(sessionId).use { session ->
             session.openWrite("apk", 0, apk.length()).use { out ->
