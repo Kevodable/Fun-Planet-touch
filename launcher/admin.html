@@ -546,21 +546,48 @@ function renderDevices(){
   state.config.devices = state.config.devices || {};
   const entries = Object.entries(state.config.devices);
   entries.forEach(([id,ov])=>{
+    ov = ov || {};
     const box=document.createElement("div"); box.className="listitem";
     box.appendChild(lineRemoveBtn(()=>{ delete state.config.devices[id]; renderDevices(); refreshPreview(); }));
+    const r1=document.createElement("div"); r1.className="row";
     const fId=fieldInput("ID dispositivo", id, {placeholder:"da schermata Diagnostica"});
-    const label=(ov&&ov.label)||"";
-    const fLabel=fieldInput("Etichetta", label);
-    const rest=Object.assign({}, ov); delete rest.label;
-    const fJson=fieldInput("Override (JSON, solo i campi da cambiare)",
+    const fLabel=fieldInput("Etichetta (nome locale)", ov.label||"");
+    r1.append(fId,fLabel); box.appendChild(r1);
+
+    // --- Branding del locale: si sovrascrivono SOLO i campi compilati,
+    //     gli altri ereditano i defaults globali. ---
+    const b=ov.branding||{};
+    const r2=document.createElement("div"); r2.className="row";
+    const fTitle=fieldInput("Titolo benvenuto", b.appTitle);
+    const fPrimary=fieldInput("Colore primario", b.primaryColor, {placeholder:"#3346D6"});
+    const fAccent=fieldInput("Colore accento", b.accentColor, {placeholder:"#FDCE72"});
+    r2.append(fTitle,fPrimary,fAccent); box.appendChild(r2);
+    const r3=document.createElement("div"); r3.className="row";
+    const fBg=fieldInput("Sfondo del locale (URL)", b.backgroundUrl);
+    fBg.appendChild(uploadButton(url=>{ fBg.__input.value=url; refreshPreview(); }, "⬆ Carica sfondo"));
+    const fLogo=fieldInput("Logo del locale (URL)", b.logoUrl);
+    fLogo.appendChild(uploadButton(url=>{ fLogo.__input.value=url; refreshPreview(); }, "⬆ Carica logo"));
+    r3.append(fBg,fLogo); box.appendChild(r3);
+
+    // Override avanzato: tutto il resto (games, kiosk…), escluso label e branding
+    const rest=Object.assign({}, ov); delete rest.label; delete rest.branding;
+    const fJson=fieldInput("Override avanzato (JSON opzionale: games, kiosk…)",
       Object.keys(rest).length?JSON.stringify(rest,null,2):"", {textarea:true,
-      placeholder:'{ "games": [ { "id": "racing01", "visible": false } ] }'});
-    box.append(fId,fLabel,fJson);
+      placeholder:'{ "games": [ { "id": "memory", "visible": false } ] }'});
+    box.appendChild(fJson);
+
     box.__get=()=>{
       const key=fId.__input.value.trim(); if(!key) return null;
       let over={}; const raw=fJson.__input.value.trim();
       if(raw){ over=JSON.parse(raw); } // throws on invalid -> caught in collect
       const lab=fLabel.__input.value.trim(); if(lab) over.label=lab;
+      const br={};
+      const t=fTitle.__input.value.trim(); if(t) br.appTitle=t;
+      const bg=fBg.__input.value.trim(); if(bg) br.backgroundUrl=bg;
+      const lg=fLogo.__input.value.trim(); if(lg) br.logoUrl=lg;
+      const pc=fPrimary.__input.value.trim(); if(pc) br.primaryColor=pc;
+      const ac=fAccent.__input.value.trim(); if(ac) br.accentColor=ac;
+      if(Object.keys(br).length) over.branding=br;
       return [key, over];
     };
     wrap.appendChild(box);
