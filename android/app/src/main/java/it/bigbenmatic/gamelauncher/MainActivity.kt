@@ -374,8 +374,8 @@ private fun HomeScreen(
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .heightIn(max = 72.dp)
-                            .padding(bottom = 4.dp),
+                            .heightIn(max = 100.dp)
+                            .padding(bottom = 6.dp),
                     )
                 }
             }
