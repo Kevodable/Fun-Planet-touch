@@ -79,6 +79,7 @@
     .start__img{ width:clamp(120px,28vmin,200px); height:auto;
       filter:drop-shadow(0 8px 14px rgba(0,0,0,.2)); }
     .start__txt{ font-size:clamp(20px,5vmin,34px); font-weight:900; color:var(--bb-burgundy); }
+    .liv-row{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
   </style>
 </head>
 <body>
@@ -88,8 +89,12 @@
       <div class="campo" id="campo">
         <div class="start" id="start">
           <img class="start__img" src="../assets/mascotte/bolt.png" alt="">
-          <div class="start__txt">Scoppia più palloncini<br>che puoi in 60 secondi!</div>
-          <button class="bb-btn bb-btn--burgundy" id="startBtn">▶ Inizia</button>
+          <div class="start__txt">Scoppia i palloncini!<br>Scegli la difficoltà:</div>
+          <div class="liv-row">
+            <button class="bb-btn bb-btn--burgundy liv-btn" data-liv="facile">😊 Facile</button>
+            <button class="bb-btn bb-btn--burgundy liv-btn" data-liv="medio">😎 Medio</button>
+            <button class="bb-btn bb-btn--burgundy liv-btn" data-liv="difficile">🔥 Difficile</button>
+          </div>
         </div>
       </div>
     </div>
@@ -108,15 +113,14 @@
     var COLORI = ["#E8488B", "#2E5BFF", "#7A1F3D", "#FFB020", "#34C759", "#FF6B6B"];
     var DURATA = 60;             // secondi di partita
 
-    // Difficoltà regolabile via URL: ?liv=facile|medio|difficile (default facile).
+    // Difficoltà scelta dal bambino a inizio partita (pulsanti nella schermata start).
     // vy = velocità di salita; spawnBase/spawnMin = intervallo tra i palloncini.
-    // Si imposta per gioco dall'admin aggiungendo ?liv=... all'URL.
-    var LIV = (new URLSearchParams(location.search).get("liv") || "facile").toLowerCase();
-    var DIFF = ({
+    var TAB = {
       facile:    { vyMin: 55, vyMax: 90,  vyScore: 0.8, spawnBase: 1100, spawnMin: 520 },
       medio:     { vyMin: 70, vyMax: 120, vyScore: 1.2, spawnBase: 900,  spawnMin: 380 },
       difficile: { vyMin: 95, vyMax: 150, vyScore: 1.7, spawnBase: 720,  spawnMin: 300 }
-    })[LIV] || { vyMin: 70, vyMax: 120, vyScore: 1.2, spawnBase: 900, spawnMin: 380 };
+    };
+    var DIFF = TAB.facile;
 
     var punteggio = 0;
     var tempo = DURATA;
@@ -244,7 +248,10 @@
       rafId = requestAnimationFrame(loop);
     }
 
-    function avvia() {
+    function mostraStart() { startScreen.classList.remove("bb-hidden"); }
+
+    function avvia(liv) {
+      if (TAB[liv]) DIFF = TAB[liv];   // difficoltà scelta dal bambino
       startScreen.classList.add("bb-hidden");
       // Pulisci eventuali palloncini residui
       palloncini.forEach(function (p) { if (p.el.parentNode) p.el.remove(); });
@@ -281,11 +288,14 @@
         titolo: nuovoRecord ? "Nuovo record!" : "Tempo scaduto!",
         punteggio: punteggio + " palloncini",
         record: record,
-        rigioca: avvia
+        rigioca: mostraStart        // torna alla scelta della difficoltà
       });
     }
 
-    document.getElementById("startBtn").addEventListener("click", avvia);
+    // Pulsanti difficoltà: ognuno avvia la partita al suo livello
+    Array.prototype.forEach.call(document.querySelectorAll(".liv-btn"), function (b) {
+      b.addEventListener("click", function () { avvia(b.dataset.liv); });
+    });
   </script>
 </body>
 </html>
