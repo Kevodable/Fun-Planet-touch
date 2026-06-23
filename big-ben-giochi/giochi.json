@@ -31,5 +31,16 @@
     "minEta": 3,
     "descrizione": "Tocca i palloncini per scoppiarli",
     "attivo": true
+  },
+  {
+    "id": "frutta",
+    "nome": "Taglia la Frutta",
+    "cartella": "frutta",
+    "icona": "🍉",
+    "iconImg": "assets/icons/frutta.svg",
+    "colore": "#34C759",
+    "minEta": 3,
+    "descrizione": "Taglia la frutta con un dito",
+    "attivo": true
   }
 ]
