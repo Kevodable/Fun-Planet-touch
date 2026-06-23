@@ -361,6 +361,25 @@ private fun HomeScreen(
             }
             Spacer(Modifier.height(12.dp))
 
+            // Logo (branding.logoUrl): mostrato come elemento sopra lo sfondo, se presente.
+            // Per-dispositivo si può impostare il logo del locale; vuoto = nessun logo qui.
+            val logoUrl = branding?.logoUrl
+            if (logoUrl != null) {
+                var logoBmp by remember(logoUrl) { mutableStateOf<android.graphics.Bitmap?>(null) }
+                LaunchedEffect(logoUrl) { logoBmp = RemoteImageLoader.load(logoUrl) }
+                logoBmp?.let {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .heightIn(max = 130.dp)
+                            .padding(bottom = 8.dp),
+                    )
+                }
+            }
+
             if (banner?.enabled == true && banner.text.isNotBlank()) {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
