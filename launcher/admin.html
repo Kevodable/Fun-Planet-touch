@@ -322,6 +322,44 @@ function contentsUrl(){
   return `${API}/repos/${o}/${r}/contents/launcher/config.json`;
 }
 
+// ---- Upload immagini su GitHub (logo, sfondo, icone giochi) ----
+function fileToB64(file){
+  return new Promise((res,rej)=>{ const fr=new FileReader();
+    fr.onload=()=>res(String(fr.result).split(",")[1]); fr.onerror=rej; fr.readAsDataURL(file); });
+}
+function pagesUrl(path){
+  const o=$("gh-owner").value.trim(), r=$("gh-repo").value.trim();
+  return `https://${o.toLowerCase()}.github.io/${r}/${path}`;
+}
+async function uploadImage(file){
+  if(!$("gh-token").value.trim()) throw new Error("inserisci prima il token GitHub e premi Carica");
+  const ext=(((file.name.split(".").pop())||"png").toLowerCase().replace(/[^a-z0-9]/g,""))||"png";
+  const safe=((file.name.replace(/\.[^.]+$/,"").toLowerCase().replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,""))||"img").slice(0,40);
+  const path=`launcher/uploads/${safe}-${Date.now()}.${ext}`;
+  const o=$("gh-owner").value.trim(), r=$("gh-repo").value.trim(), branch=$("gh-branch").value.trim();
+  const b64=await fileToB64(file);
+  const res=await fetch(`${API}/repos/${o}/${r}/contents/${path}`, { method:"PUT", headers:ghHeaders(),
+    body:JSON.stringify({ message:"Upload immagine "+path+" (da admin)", content:b64, branch }) });
+  if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
+  return pagesUrl(path);
+}
+/* Bottone "Carica immagine": carica un file e passa l'URL pubblico a onDone. */
+function uploadButton(onDone, txt){
+  const wrap=document.createElement("span");
+  wrap.style.cssText="display:inline-flex;align-items:center;gap:6px;margin-top:4px";
+  const input=document.createElement("input"); input.type="file"; input.accept="image/*"; input.style.display="none";
+  const btn=document.createElement("button"); btn.type="button"; btn.className="ghost small"; btn.textContent=txt||"⬆ Carica immagine";
+  btn.onclick=()=>input.click();
+  input.onchange=async()=>{
+    const f=input.files&&input.files[0]; if(!f) return;
+    const old=btn.textContent; btn.disabled=true; btn.textContent="⏳ Carico…";
+    try{ const url=await uploadImage(f); onDone(url); btn.textContent="✓ Caricata"; }
+    catch(e){ alert("Upload fallito: "+e.message); btn.textContent=old; }
+    btn.disabled=false; input.value="";
+  };
+  wrap.append(btn,input); return wrap;
+}
+
 // ---- LOAD ----
 async function loadConfig(){
   saveCreds();
@@ -429,6 +467,8 @@ function renderGames(){
     // Si valorizza SOLO uno tra "Package Android" e "URL gioco web".
     const fUrl=fieldInput("URL gioco web (vuoto = gioco nativo)", g.url, {placeholder:"https://…/index.html"});
     const fIcon=fieldInput("URL icona", g.iconUrl);
+    // Carica un'icona dal browser e riempi il campo URL
+    fIcon.appendChild(uploadButton(url=>{ fIcon.__input.value=url; refreshPreview(); }, "⬆ Carica icona"));
     const fCat=fieldInput("Categoria", g.category);
     r2.append(fUrl,fIcon,fCat); box.appendChild(r2);
     const r2b=document.createElement("div"); r2b.className="row";
@@ -620,6 +660,10 @@ $("btn-add-wifi").onclick = ()=>{ obj(d(),"network").wifiNetworks.push({ssid:"",
 $("btn-add-device").onclick = ()=>{ state.config.devices["NUOVO-DEVICE-ID-"+Date.now()]={label:""}; renderDevices(); refreshPreview(); };
 $("btn-refresh-preview").onclick = refreshPreview;
 $("btn-save").onclick = saveConfig;
+
+// Upload immagini per il branding (logo e sfondo)
+$("f-logoUrl").parentElement.appendChild(uploadButton(url=>{ $("f-logoUrl").value=url; refreshPreview(); }, "⬆ Carica logo"));
+$("f-backgroundUrl").parentElement.appendChild(uploadButton(url=>{ $("f-backgroundUrl").value=url; refreshPreview(); }, "⬆ Carica sfondo"));
 document.addEventListener("input", e=>{ if($("editor").style.display!=="none") refreshPreview(); });
 </script>
 </body>
