@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 23,
-  "updatedAt": "2026-06-23T13:35:32.164Z",
+  "configVersion": 24,
+  "updatedAt": "2026-06-23T13:48:28.894Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -110,7 +110,10 @@
   },
   "devices": {
     "256e7f33-196d-4bd4-ba90-33d7da081284": {
-      "label": "Test big ben"
+      "label": "Test big ben",
+      "branding": {
+        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/sfondo-touch-1782222496992.png"
+      }
     }
   }
 }
