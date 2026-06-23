@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "configVersion": 33,
-  "updatedAt": "2026-06-23T20:25:00.000Z",
+  "configVersion": 34,
+  "updatedAt": "2026-06-23T20:27:46.624Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
       "appTitle": "Benvenuti a Kids Fun Planet!",
       "logoUrl": null,
-      "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-home2.png",
+      "backgroundUrl": null,
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
       "language": "it"
@@ -82,6 +82,7 @@
       },
       {
         "id": "stelle",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/stelle/index.html",
         "displayName": "Acchiappa-stelle",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/stelle.png",
@@ -133,7 +134,7 @@
     "256e7f33-196d-4bd4-ba90-33d7da081284": {
       "label": "Test big ben",
       "branding": {
-        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/sfondo-touch-1782222496992.png",
+        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/progetto-senza-titolo-1-1782246463763.png",
         "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image0-photoroom-1782245099261.png"
       }
     }
