@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "configVersion": 16,
-  "updatedAt": "2026-06-23T10:00:00.000Z",
-  "pollIntervalMinutes": 15,
+  "configVersion": 19,
+  "updatedAt": "2026-06-23T13:00:00.000Z",
+  "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
       "appTitle": "Benvenuti a Kids Fun Planet!",
@@ -78,7 +78,7 @@
       ]
     },
     "update": {
-      "latestVersionCode": 4,
+      "latestVersionCode": 5,
       "apkUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/apk/launcher-latest.apk",
       "silentInstall": true
     },

@@ -695,6 +695,32 @@ private fun DiagnosticsScreen(
         )
         DiagnosticRow("Stato operativo", config?.operational?.status ?: "—")
 
+        // Forza subito un nuovo scaricamento della configurazione (senza aspettare il poll).
+        Spacer(Modifier.height(12.dp))
+        val cfgScope = rememberCoroutineScope()
+        var cfgRefreshMsg by remember { mutableStateOf<String?>(null) }
+        var cfgRefreshing by remember { mutableStateOf(false) }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Button(
+                enabled = !cfgRefreshing,
+                onClick = {
+                    cfgRefreshing = true
+                    cfgRefreshMsg = "Aggiorno…"
+                    cfgScope.launch {
+                        withContext(Dispatchers.IO) { runCatching { fleetApp.configRepository.refresh() } }
+                        val online = fleetApp.configRepository.connectionStatus.value == ConnectionStatus.ONLINE
+                        val v = fleetApp.configRepository.config.value?.configVersion ?: 0
+                        cfgRefreshMsg = if (online) "✓ Config v$v (online)" else "Offline: nessuna risposta"
+                        cfgRefreshing = false
+                    }
+                },
+            ) { Text(if (cfgRefreshing) "Attendere…" else "Aggiorna config ora") }
+            cfgRefreshMsg?.let {
+                Spacer(Modifier.width(12.dp))
+                Text(it, fontSize = 12.sp)
+            }
+        }
+
         Spacer(Modifier.height(20.dp))
         Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F4FF))) {
             Text(
