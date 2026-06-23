@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 25,
-  "updatedAt": "2026-06-23T15:10:00.000Z",
+  "configVersion": 26,
+  "updatedAt": "2026-06-23T14:55:18.691Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
