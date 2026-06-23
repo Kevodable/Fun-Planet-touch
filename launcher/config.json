@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "configVersion": 19,
-  "updatedAt": "2026-06-23T13:00:00.000Z",
+  "configVersion": 20,
+  "updatedAt": "2026-06-23T13:10:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
       "appTitle": "Benvenuti a Kids Fun Planet!",
-      "logoUrl": "",
+      "logoUrl": null,
       "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-home2.png",
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
@@ -18,7 +18,7 @@
       "showLabels": true
     },
     "kiosk": {
-      "enabled": false,
+      "enabled": true,
       "exitPin": "4271",
       "idleTimeoutSeconds": 60,
       "sessionLimitSeconds": 0,
@@ -38,9 +38,10 @@
     "games": [
       {
         "id": "memory",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/memory/index.html",
-        "displayName": "Abbina le Coppie",
-        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/memory.png",
+        "displayName": "Memory",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/unnamed-1782217966114.png",
         "category": "Giochi web",
         "order": 10,
         "visible": true,
@@ -48,9 +49,10 @@
       },
       {
         "id": "talpe",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/talpe/index.html",
         "displayName": "Acchiappa la Talpa",
-        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/talpe.png",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/icon-1782218056475.png",
         "category": "Giochi web",
         "order": 11,
         "visible": true,
@@ -58,8 +60,9 @@
       },
       {
         "id": "palloncini",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/palloncini/index.html",
-        "displayName": "Scoppia i Palloncini",
+        "displayName": "Scoppia i palloncini",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/palloncini.png",
         "category": "Giochi web",
         "order": 12,
@@ -106,23 +109,12 @@
     }
   },
   "devices": {
-    "INCOLLA-QUI-IL-DEVICE-ID": {
+    "256e7f33-196d-4bd4-ba90-33d7da081284": {
+      "label": "Test big ben",
       "branding": {
-        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-ingresso.jpg"
-      },
-      "games": [
-        {
-          "id": "memory",
-          "visible": true,
-          "order": 1
-        },
-        {
-          "id": "talpe",
-          "visible": true,
-          "order": 2
-        }
-      ],
-      "label": "Touch ingresso sala"
+        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-ingresso.jpg",
+        "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/lego_logo-svg-1782217768432.png"
+      }
     }
   }
 }
