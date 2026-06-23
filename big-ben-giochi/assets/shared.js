@@ -173,17 +173,14 @@
           righe +
           '<div class="bb-overlay__actions">' +
             '<button class="bb-btn" id="bb-replay">🔁 Rigioca</button>' +
-            '<button class="bb-btn bb-btn--burgundy" id="bb-exit2">← Esci</button>' +
           "</div>" +
         "</div>";
       ov.hidden = false;
 
+      // Per uscire si usa il pulsante flottante "🏠 Giochi" del launcher (unico).
       ov.querySelector("#bb-replay").addEventListener("click", function () {
         ov.hidden = true;
         if (typeof opzioni.rigioca === "function") opzioni.rigioca();
-      });
-      ov.querySelector("#bb-exit2").addEventListener("click", function () {
-        BB.home();
       });
     },
 
