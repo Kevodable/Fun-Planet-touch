@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 35,
-  "updatedAt": "2026-06-23T20:31:00.000Z",
+  "configVersion": 36,
+  "updatedAt": "2026-06-23T20:41:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -98,6 +98,16 @@
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/sequenza.png",
         "category": "Giochi web",
         "order": 15,
+        "visible": true,
+        "sessionLimitSeconds": 0
+      },
+      {
+        "id": "lavagna",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/lavagna/index.html",
+        "displayName": "Lavagna",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/lavagna.png",
+        "category": "Giochi web",
+        "order": 16,
         "visible": true,
         "sessionLimitSeconds": 0
       }
