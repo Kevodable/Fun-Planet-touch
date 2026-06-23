@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 36,
-  "updatedAt": "2026-06-23T20:40:00.000Z",
+  "configVersion": 37,
+  "updatedAt": "2026-06-23T20:50:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -107,6 +107,16 @@
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/lavagna.png",
         "category": "Giochi web",
         "order": 16,
+        "visible": true,
+        "sessionLimitSeconds": 0
+      },
+      {
+        "id": "labirinto",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/labirinto/index.html",
+        "displayName": "Labirinto",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/labirinto.png",
+        "category": "Giochi web",
+        "order": 17,
         "visible": true,
         "sessionLimitSeconds": 0
       }
