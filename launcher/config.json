@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 33,
-  "updatedAt": "2026-06-23T20:25:00.000Z",
+  "configVersion": 34,
+  "updatedAt": "2026-06-23T20:30:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -87,6 +87,16 @@
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/stelle.png",
         "category": "Giochi web",
         "order": 14,
+        "visible": true,
+        "sessionLimitSeconds": 0
+      },
+      {
+        "id": "sequenza",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/sequenza/index.html",
+        "displayName": "Sequenza colori",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/sequenza.png",
+        "category": "Giochi web",
+        "order": 15,
         "visible": true,
         "sessionLimitSeconds": 0
       }
