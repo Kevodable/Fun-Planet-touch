@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 29,
-  "updatedAt": "2026-06-23T16:00:00.000Z",
+  "configVersion": 30,
+  "updatedAt": "2026-06-23T20:05:06.014Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -71,6 +71,7 @@
       },
       {
         "id": "frutta",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/frutta/index.html",
         "displayName": "Taglia la Frutta",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/frutta.png",
@@ -123,7 +124,7 @@
       "label": "Test big ben",
       "branding": {
         "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/sfondo-touch-1782222496992.png",
-        "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/kp-photoroom-1782227399458.png"
+        "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image0-photoroom-1782245099261.png"
       }
     }
   }
