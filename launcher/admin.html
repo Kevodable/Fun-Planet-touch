@@ -32,6 +32,11 @@
     padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
   }
   .card h2 { margin: 0 0 4px; font-size: 17px; color: var(--primary); }
+  /* Accordion: sezioni comprimibili */
+  .card > h2 { cursor: pointer; user-select: none; }
+  .card > h2::before { content: "▸ "; color: #9aa; font-size: .85em; }
+  .card:not(.collapsed) > h2::before { content: "▾ "; }
+  .card.collapsed > *:not(h2) { display: none !important; }
   .card .hint { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
   label.field { display: block; margin: 10px 0; font-size: 13px; color: #333; }
   label.field span { display: block; margin-bottom: 4px; font-weight: 600; color: #444; }
@@ -717,6 +722,14 @@ $("btn-save").onclick = saveConfig;
 $("f-logoUrl").parentElement.appendChild(uploadButton(url=>{ $("f-logoUrl").value=url; refreshPreview(); }, "⬆ Carica logo"));
 $("f-backgroundUrl").parentElement.appendChild(uploadButton(url=>{ $("f-backgroundUrl").value=url; refreshPreview(); }, "⬆ Carica sfondo"));
 document.addEventListener("input", e=>{ if($("editor").style.display!=="none") refreshPreview(); });
+
+// Accordion: tutte le sezioni chiuse, si aprono al clic sul titolo. Tengo aperta la "1 · Connessione".
+document.querySelectorAll(".card").forEach(c=>{
+  const h=c.querySelector("h2"); if(!h) return;
+  c.classList.add("collapsed");
+  h.addEventListener("click", ()=> c.classList.toggle("collapsed"));
+});
+(function(){ const f=document.querySelector(".card h2"); if(f) f.parentElement.classList.remove("collapsed"); })();
 </script>
 </body>
 </html>
