@@ -29,8 +29,7 @@
 </style>
 </head>
 <body>
-  <!-- Pulsante per tornare alla griglia del launcher -->
-  <button id="bb-exit-kiosk" aria-label="Esci">← Esci</button>
+  <!-- Per uscire si usa il pulsante flottante "🏠 Giochi" del launcher (unico). -->
 
   <div class="sky">
     <div class="cloud cloud-1"></div>
@@ -95,9 +94,7 @@
   <!-- Utility condivise del kiosk (BB.home, ecc.) -->
   <script src="../assets/shared.js"></script>
   <script>
-    // Pulsante Esci → torna al launcher (o alla gallery come fallback)
-    document.getElementById("bb-exit-kiosk").addEventListener("click", function(){ BB.home(); });
-    // Auto-ritorno alla gallery dopo 60s di inattività
+    // Uscita: pulsante flottante "🏠 Giochi" del launcher. Auto-ritorno dopo 60s.
     BB.idle(60000, BB.home);
   </script>
   <script src="script.js"></script>

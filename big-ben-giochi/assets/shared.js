@@ -208,21 +208,18 @@
       return cur;
     },
 
-    /* Crea l'header standard (pulsante Esci + titolo + slot info opzionale)
-       e lo inserisce come primo figlio del contenitore .bb-screen.
+    /* Crea l'header standard (titolo + slot info opzionale) e lo inserisce come
+       primo figlio del contenitore .bb-screen. Per uscire si usa il pulsante
+       flottante "🏠 Giochi" del launcher (unico, vale anche per i giochi APK).
        Ritorna il nodo .bb-header__info per aggiornare punteggi ecc. */
     header: function (titolo, screenEl) {
       screenEl = screenEl || document.querySelector(".bb-screen");
       var h = document.createElement("header");
       h.className = "bb-header";
       h.innerHTML =
-        '<button class="bb-btn bb-btn--exit" id="bb-exit">← Esci</button>' +
         '<h1 class="bb-header__title">' + (titolo || "") + "</h1>" +
         '<div class="bb-header__info" id="bb-info"></div>';
       screenEl.insertBefore(h, screenEl.firstChild);
-      h.querySelector("#bb-exit").addEventListener("click", function () {
-        BB.home();
-      });
       return h.querySelector("#bb-info");
     }
   };
