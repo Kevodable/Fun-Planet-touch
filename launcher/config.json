@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 22,
-  "updatedAt": "2026-06-23T13:28:40.892Z",
+  "configVersion": 23,
+  "updatedAt": "2026-06-23T13:35:32.164Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -41,7 +41,7 @@
         "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/memory/index.html",
         "displayName": "Memory",
-        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/unnamed-1782217966114.png",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/memorygame_segnaposto-1782221476317.jpg",
         "category": "Giochi web",
         "order": 10,
         "visible": true,
@@ -63,7 +63,7 @@
         "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/palloncini/index.html",
         "displayName": "Scoppia i palloncini",
-        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/palloncini.png",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/unnamed-1782217966114.png",
         "category": "Giochi web",
         "order": 12,
         "visible": true,
@@ -110,13 +110,7 @@
   },
   "devices": {
     "256e7f33-196d-4bd4-ba90-33d7da081284": {
-      "label": "Test big ben",
-      "games": [
-        {
-          "id": "memory",
-          "visible": false
-        }
-      ]
+      "label": "Test big ben"
     }
   }
 }
