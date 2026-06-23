@@ -42,5 +42,16 @@
     "minEta": 3,
     "descrizione": "Taglia la frutta con un dito",
     "attivo": true
+  },
+  {
+    "id": "stelle",
+    "nome": "Acchiappa-stelle",
+    "cartella": "stelle",
+    "icona": "⭐",
+    "iconImg": "assets/icons/stelle.svg",
+    "colore": "#FFB020",
+    "minEta": 3,
+    "descrizione": "Prendi le stelle col cesto",
+    "attivo": true
   }
 ]
