@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 26,
-  "updatedAt": "2026-06-23T14:55:18.691Z",
+  "configVersion": 27,
+  "updatedAt": "2026-06-23T15:10:03.389Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -112,7 +112,8 @@
     "256e7f33-196d-4bd4-ba90-33d7da081284": {
       "label": "Test big ben",
       "branding": {
-        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/sfondo-touch-1782222496992.png"
+        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/sfondo-touch-1782222496992.png",
+        "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/kp-photoroom-1782227399458.png"
       }
     }
   }
