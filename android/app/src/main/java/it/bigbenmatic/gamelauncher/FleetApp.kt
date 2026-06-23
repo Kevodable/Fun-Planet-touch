@@ -92,12 +92,12 @@ class FleetApp : Application() {
         scope.launch {
             while (true) {
                 runCatching { configRepository.refresh() }
-                runCatching { applyWifi() }
-                runCatching { applyManagedApps() }
                 val online = configRepository.connectionStatus.value == ConnectionStatus.ONLINE
+                // Riapplica il Wi-Fi SOLO se offline (es. al boot o dopo una caduta): evita di
+                // forzare riconnessioni quando è già connesso, che causavano i distacchi.
+                if (!online) runCatching { applyWifi() }
+                runCatching { applyManagedApps() }
                 val minutes = configRepository.config.value?.pollIntervalMinutes?.takeIf { it > 0 } ?: 15
-                // Se offline (es. WiFi non ancora pronto subito dopo il riavvio) riprova presto;
-                // altrimenti usa l'intervallo normale.
                 delay(if (online) minutes * 60_000L else 20_000L)
             }
         }

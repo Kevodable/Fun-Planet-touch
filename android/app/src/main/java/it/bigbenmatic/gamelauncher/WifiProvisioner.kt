@@ -52,21 +52,23 @@ object WifiProvisioner {
         var primaryNetId = -1
         for (n in ordered) {
             val quoted = "\"${n.ssid}\""
-            // rimuovi eventuali configurazioni precedenti per lo stesso SSID
-            existing.filter { it.SSID == quoted }.forEach { runCatching { wifi.removeNetwork(it.networkId) } }
-            val conf = WifiConfiguration().apply {
-                SSID = quoted
-                hiddenSSID = n.hidden
-                if (n.password.isNullOrEmpty()) {
-                    allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
-                } else {
-                    preSharedKey = "\"${n.password}\""
+            // Riusa la rete se già configurata (niente remove+riadd: evitava il "flapping").
+            var id = existing.firstOrNull { it.SSID == quoted }?.networkId ?: -1
+            if (id == -1) {
+                val conf = WifiConfiguration().apply {
+                    SSID = quoted
+                    hiddenSSID = n.hidden
+                    if (n.password.isNullOrEmpty()) {
+                        allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+                    } else {
+                        preSharedKey = "\"${n.password}\""
+                    }
                 }
+                id = wifi.addNetwork(conf)
             }
-            val id = wifi.addNetwork(conf)
             if (id != -1) {
                 if (primaryNetId == -1) primaryNetId = id
-                wifi.enableNetwork(id, false)
+                runCatching { wifi.enableNetwork(id, false) }
             } else {
                 Log.w(TAG, "addNetwork rifiutato SSID=${n.ssid}")
             }
