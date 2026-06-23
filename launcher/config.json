@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "configVersion": 16,
-  "updatedAt": "2026-06-23T10:00:00.000Z",
+  "configVersion": 17,
+  "updatedAt": "2026-06-23T09:58:08.090Z",
   "pollIntervalMinutes": 15,
   "defaults": {
     "branding": {
       "appTitle": "Benvenuti a Kids Fun Planet!",
-      "logoUrl": "",
+      "logoUrl": null,
       "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-home2.png",
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
@@ -110,22 +110,10 @@
   },
   "devices": {
     "INCOLLA-QUI-IL-DEVICE-ID": {
+      "label": "Touch ingresso sala",
       "branding": {
         "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/assets/bg-ingresso.jpg"
-      },
-      "games": [
-        {
-          "id": "memory",
-          "visible": true,
-          "order": 1
-        },
-        {
-          "id": "talpe",
-          "visible": true,
-          "order": 2
-        }
-      ],
-      "label": "Touch ingresso sala"
+      }
     }
   }
 }
