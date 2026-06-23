@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 30,
-  "updatedAt": "2026-06-23T20:05:06.014Z",
+  "configVersion": 31,
+  "updatedAt": "2026-06-23T20:30:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -77,6 +77,16 @@
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/frutta.png",
         "category": "Giochi web",
         "order": 13,
+        "visible": true,
+        "sessionLimitSeconds": 0
+      },
+      {
+        "id": "stelle",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/stelle/index.html",
+        "displayName": "Acchiappa-stelle",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/stelle.png",
+        "category": "Giochi web",
+        "order": 14,
         "visible": true,
         "sessionLimitSeconds": 0
       }
