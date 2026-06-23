@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 36,
-  "updatedAt": "2026-06-23T20:41:00.000Z",
+  "configVersion": 37,
+  "updatedAt": "2026-06-23T21:31:28.504Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -93,6 +93,7 @@
       },
       {
         "id": "sequenza",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/sequenza/index.html",
         "displayName": "Sequenza colori",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/sequenza.png",
@@ -103,6 +104,7 @@
       },
       {
         "id": "lavagna",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/lavagna/index.html",
         "displayName": "Lavagna",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/lavagna.png",
@@ -156,6 +158,13 @@
       "branding": {
         "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/progetto-senza-titolo-1-1782246463763.png",
         "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image0-photoroom-1782245099261.png"
+      }
+    },
+    "2e649b44-fc33-404d-8db9-b3147678259b": {
+      "label": "Test big ben 2",
+      "branding": {
+        "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/img_4209-1782250224395.jpeg",
+        "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/customcolor_logo_transparent_background-1782250274039.png"
       }
     }
   }
