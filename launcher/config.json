@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "configVersion": 39,
+  "configVersion": 40,
   "updatedAt": "2026-06-24T10:05:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
@@ -117,6 +117,16 @@
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/labirinto.png",
         "category": "Giochi web",
         "order": 17,
+        "visible": true,
+        "sessionLimitSeconds": 0
+      },
+      {
+        "id": "forme",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/forme/index.html",
+        "displayName": "Abbina le forme",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/forme.png",
+        "category": "Giochi web",
+        "order": 18,
         "visible": true,
         "sessionLimitSeconds": 0
       }
