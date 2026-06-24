@@ -37,21 +37,27 @@ adb devices
 # deve elencare il tuo tablet come "device" (non "unauthorized")
 ```
 
-## 2) Builda l'APK (su Android Studio — consigliato)
+## 2) Procurati l'APK
 
-Il gradle wrapper nel repo è incompleto, quindi la via più semplice è
-Android Studio:
+**Via più semplice (consigliata): usa l'APK già pubblicato.** Nel repo c'è sempre
+l'ultima versione firmata, la stessa che ricevono i tablet via OTA:
 
-1. Apri la cartella `android/` con **Android Studio** e attendi il *Gradle sync*
-   (genera anche `gradlew` e scarica il necessario).
-2. Menu **Build → Build Bundle(s) / APK(s) → Build APK(s)**.
-3. A fine build, clicca **locate**: l'APK di test è qui:
-   ```
-   android/app/build/outputs/apk/debug/app-debug.apk
-   ```
-   (L'APK *debug* è già firmato con la chiave di debug: perfetto per la prova.)
+```
+launcher/apk/launcher-latest.apk
+```
+oppure scaricabile da:
+```
+https://kevodable.github.io/Fun-Planet-touch/launcher/apk/launcher-latest.apk
+```
+È firmato con la **chiave di debug stabile** (stessa firma di tutti gli OTA finora),
+quindi va bene sia per la prima installazione sia per gli aggiornamenti.
 
-In alternativa, dopo il primo sync di Android Studio puoi usare la CLI:
+> **Attuale: `versionCode = 9` (versionName 1.8).** Verifica sempre che il numero qui
+> e in `config.json → defaults.update.latestVersionCode` coincidano.
+
+**In alternativa, ricompila** (utile solo se modifichi il codice). Con Android Studio:
+apri `android/`, attendi il *Gradle sync*, poi **Build → Build APK(s)** → l'output è
+`android/app/build/outputs/apk/debug/app-debug.apk`. Oppure da CLI dopo il primo sync:
 ```bash
 cd android
 ./gradlew assembleDebug
@@ -60,8 +66,8 @@ cd android
 ## 3) Installa l'APK sul tablet
 
 ```bash
-# dal Mac, sostituisci il percorso con quello del tuo app-debug.apk
-adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+# dal Mac, usa l'APK pubblicato o l'app-debug.apk appena buildato
+adb install -r launcher-latest.apk
 ```
 `-r` reinstalla mantenendo i dati se l'app c'è già.
 
@@ -92,7 +98,7 @@ adb shell cmd package set-home-activity it.bigbenmatic.gamelauncher/.MainActivit
 adb shell dpm list-owners
 # Stato completo delle policy (cerca "Device Owner")
 adb shell dumpsys device_policy | grep -i "owner"
-# Versione installata (deve essere 2)
+# Versione installata (deve essere 9)
 adb shell dumpsys package it.bigbenmatic.gamelauncher | grep versionCode
 ```
 A questo punto: apri un gioco dalla griglia → si apre la WebView a tutto
@@ -121,14 +127,24 @@ dispositivo "importante".
 
 ## Aggiornamenti successivi (OTA, senza cavo)
 
-Dopo questa prima installazione manuale, gli aggiornamenti possono arrivare
-**da soli** via `config.json` (l'app è Device Owner e si auto-installa):
+Dopo questa prima installazione manuale, gli aggiornamenti arrivano **da soli** via
+`config.json` — **ma solo se l'app è Device Owner** (senza Device Owner il self-update
+non parte e Android non consente l'installazione silenziosa). Flusso:
 
-1. In Android Studio alza `versionCode` in `android/app/build.gradle.kts`
-   (es. 2 → 3) e builda un APK *release* firmato.
-2. Carica l'APK all'URL indicato in `config.json → defaults.update.apkUrl`
-   (`launcher/apk/launcher-latest.apk`).
-3. Imposta `defaults.update.latestVersionCode` al nuovo numero (es. 3) e committa.
-4. Al prossimo poll della config, i tablet si aggiornano in silenzio.
+1. Alza `versionCode` in `android/app/build.gradle.kts` (es. 9 → 10) e builda l'APK
+   (stessa chiave di firma di quello già installato, altrimenti l'OTA viene rifiutato).
+2. Copia l'APK in `launcher/apk/launcher-latest.apk` (l'URL in `config.json →
+   defaults.update.apkUrl`).
+3. Imposta `defaults.update.latestVersionCode` al nuovo numero (es. 10), incrementa
+   `configVersion` e pubblica (merge in `great-meitner`).
+4. Al prossimo poll della config, i tablet Device Owner si aggiornano in silenzio.
 
-(Attuale: app `versionCode = 2`, config `latestVersionCode = 2`.)
+> **Attuale: app `versionCode = 9` (1.8), config `latestVersionCode = 9`.**
+> Da v9 in poi il launcher è multi-tenant (router `launcher/fleet.json`): un tablet non
+> mappato vede comunque la config di Big Ben. Vedi `launcher/clients/README.md`.
+
+### Promemoria distribuzione finale
+Oggi gli APK sono firmati con la **chiave di debug** (valida e stabile, ma di debug).
+Prima di distribuire su molti tablet di proprietà conviene creare una **keystore di
+release** permanente e rifare la prima installazione via cavo con quella chiave (gli OTA
+successivi funzioneranno con la chiave di release).
