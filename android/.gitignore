@@ -9,3 +9,8 @@
 .cxx
 local.properties
 **/build/
+
+# Segreti di firma release: NON committare MAI (keystore + password)
+keystore.properties
+*.keystore
+*.jks

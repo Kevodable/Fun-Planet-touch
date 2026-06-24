@@ -143,8 +143,10 @@ non parte e Android non consente l'installazione silenziosa). Flusso:
 > Da v9 in poi il launcher è multi-tenant (router `launcher/fleet.json`): un tablet non
 > mappato vede comunque la config di Big Ben. Vedi `launcher/clients/README.md`.
 
-### Promemoria distribuzione finale
-Oggi gli APK sono firmati con la **chiave di debug** (valida e stabile, ma di debug).
-Prima di distribuire su molti tablet di proprietà conviene creare una **keystore di
-release** permanente e rifare la prima installazione via cavo con quella chiave (gli OTA
-successivi funzioneranno con la chiave di release).
+### Distribuzione finale: usa l'APK di release
+La **keystore di release** ora esiste (vedi `android/SIGNING.md`, SHA-256 `e12c01bb…`).
+Per i **monitor definitivi**: prima installazione via cavo con l'**APK di release**
+(`assembleRelease`, oppure il file `launcher-release-v9.apk` fornito a Kevin), poi
+provisioning Device Owner come sopra. Gli OTA successivi vanno firmati con la **stessa**
+chiave di release. I 2 tablet di **test** restano sulla firma di *debug* (`c23a3cc0…`);
+per allinearli alla release serve factory reset + reinstallazione.
