@@ -1,25 +1,14 @@
 {
   "schemaVersion": 1,
-  "routerVersion": 1,
-  "updatedAt": "2026-06-24T10:00:00.000Z",
+  "routerVersion": 4,
+  "updatedAt": "2026-06-24T12:00:00.000Z",
   "_nota": "Router multi-tenant. Mappa ogni UUID device al manifest del suo cliente. 'default' = cliente zero Big Ben Matic (retrocompatibilità: punta all'attuale config.json). I device non elencati in 'devices' usano 'default'.",
   "default": {
     "clientId": "bigbenmatic",
-    "locationId": null,
+    "locationId": "Big ben principale",
     "manifestUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/config.json"
   },
-  "devices": {
-    "256e7f33-196d-4bd4-ba90-33d7da081284": {
-      "clientId": "bigbenmatic",
-      "locationId": "bigben-test-1",
-      "manifestUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/config.json"
-    },
-    "2e649b44-fc33-404d-8db9-b3147678259b": {
-      "clientId": "bigbenmatic",
-      "locationId": "bigben-test-2",
-      "manifestUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/config.json"
-    }
-  },
+  "devices": {},
   "_esempio_nuovo_cliente": {
     "UUID-DEL-DEVICE-DEL-CLIENTE": {
       "clientId": "ristorante-demo",
