@@ -108,6 +108,24 @@
     <div class="status" id="conn-status"></div>
   </div>
 
+  <!-- CLIENTE ATTIVO (multi-tenant) -->
+  <div class="card" id="tenant" style="display:none">
+    <h2>Cliente / manifest attivo</h2>
+    <p class="hint">
+      Scegli quale configurazione stai modificando. <b>Big Ben Matic</b> = <code>launcher/config.json</code>
+      (cliente zero). Gli altri clienti = <code>launcher/clients/&lt;id&gt;/config.json</code>.
+      Ogni cliente ha branding, giochi e telemetria propri.
+    </p>
+    <div class="row">
+      <label class="field"><span>Cliente attivo</span>
+        <select id="target-select"></select></label>
+      <div style="display:flex;align-items:flex-end;gap:8px">
+        <button class="ghost small" id="btn-new-client">➕ Nuovo cliente</button>
+      </div>
+    </div>
+    <div style="font-size:12.5px;color:var(--muted)">Sto modificando: <code id="target-path">launcher/config.json</code></div>
+  </div>
+
   <div id="editor" style="display:none">
 
     <!-- GENERALE -->
@@ -258,6 +276,27 @@
       <button class="ghost small" id="btn-add-device">+ Aggiungi monitor</button>
     </div>
 
+    <!-- ROUTER CLIENTI (fleet.json) -->
+    <div class="card">
+      <h2>12 · Router clienti (assegnazione monitor → cliente)</h2>
+      <p class="hint">
+        Questo è il file <code>fleet.json</code>: dice a ogni monitor <b>quale cliente</b> servire.
+        Un device non elencato usa il <b>default</b> (Big Ben). L'<b>UUID</b> si legge sul tablet in
+        <b>Diagnostica → ID dispositivo</b>. Si salva separatamente col suo pulsante qui sotto.
+        <br>⚠ Da non confondere con la sezione 11: lì regoli i dettagli <i>dentro</i> un cliente,
+        qui assegni il monitor <i>a</i> un cliente.
+      </p>
+      <div style="font-size:13px;font-weight:600;color:#444;margin:6px 0 2px">Default (fallback per i device non elencati)</div>
+      <div id="fleet-default"></div>
+      <div style="font-size:13px;font-weight:600;color:#444;margin:12px 0 2px">Monitor assegnati</div>
+      <div id="fleet-list"></div>
+      <button class="ghost small" id="btn-add-fleet">+ Assegna monitor a un cliente</button>
+      <div class="toolbar" style="margin-top:12px">
+        <button id="btn-save-fleet">💾 Salva router (versione <span id="fleet-next-ver" class="ver"></span>)</button>
+      </div>
+      <div class="status" id="fleet-status"></div>
+    </div>
+
     <!-- AVANZATO -->
     <div class="card">
       <details>
@@ -310,7 +349,10 @@ function utf8ToB64(str){
   return btoa(bin);
 }
 
-let state = { config:null, sha:null };
+// targetPath = file config attualmente in modifica (Big Ben o un cliente).
+// fleet = router fleet.json (assegnazione device→cliente), salvato a parte.
+let state = { config:null, sha:null, targetPath:"launcher/config.json", targetClient:"bigbenmatic",
+              fleet:null, fleetSha:null };
 
 function status(el, msg, kind){
   el.className = "status show " + kind;
@@ -324,9 +366,30 @@ function ghHeaders(){
     "X-GitHub-Api-Version": "2022-11-28",
   };
 }
-function contentsUrl(){
+function contentsUrlFor(path){
   const o=$("gh-owner").value.trim(), r=$("gh-repo").value.trim();
-  return `${API}/repos/${o}/${r}/contents/launcher/config.json`;
+  return `${API}/repos/${o}/${r}/contents/${path}`;
+}
+// URL del file config attualmente selezionato (Big Ben o cliente).
+function contentsUrl(){ return contentsUrlFor(state.targetPath); }
+
+// Legge lo sha corrente di un file (null se non esiste): serve per aggiornarlo via API.
+async function getSha(path){
+  const branch=$("gh-branch").value.trim();
+  const res=await fetch(contentsUrlFor(path)+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+  if(res.status===404) return null;
+  if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
+  return (await res.json()).sha;
+}
+// Scrive (crea o aggiorna) un file JSON nel repo. Ritorna lo sha nuovo.
+async function putJsonFile(path, obj, message){
+  const branch=$("gh-branch").value.trim();
+  const sha=await getSha(path);
+  const body={ message, content:utf8ToB64(JSON.stringify(obj,null,2)+"\n"), branch };
+  if(sha) body.sha=sha;
+  const res=await fetch(contentsUrlFor(path), { method:"PUT", headers:ghHeaders(), body:JSON.stringify(body) });
+  if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
+  return (await res.json()).content.sha;
 }
 
 // ---- Upload immagini su GitHub (logo, sfondo, icone giochi) ----
@@ -367,24 +430,59 @@ function uploadButton(onDone, txt){
   wrap.append(btn,input); return wrap;
 }
 
-// ---- LOAD ----
-async function loadConfig(){
+// ---- CONNECT / LOAD (multi-tenant) ----
+function pathForClient(id){ return id==="bigbenmatic" ? "launcher/config.json" : "launcher/clients/"+id+"/config.json"; }
+
+async function connect(){
   saveCreds();
-  status($("conn-status"), "Carico la configurazione…", "info");
+  status($("conn-status"), "Connessione e caricamento…", "info");
   try {
-    const branch = $("gh-branch").value.trim();
-    const res = await fetch(contentsUrl()+"?ref="+encodeURIComponent(branch), { headers: ghHeaders() });
-    if(!res.ok){ throw new Error("HTTP "+res.status+" — "+(await res.text())); }
-    const data = await res.json();
-    state.sha = data.sha;
-    state.config = JSON.parse(b64ToUtf8(data.content));
-    renderAll();
+    await loadFleet();              // router fleet.json (tollera l'assenza)
+    await populateTargetSelect();   // elenco clienti dalla cartella launcher/clients/
+    await loadTarget(pathForClient(state.targetClient), state.targetClient);
+    $("tenant").style.display = ""; $("tenant").classList.remove("collapsed");
     $("editor").style.display = "";
-    status($("conn-status"), "Configurazione caricata (versione "+(state.config.configVersion||0)+").", "ok");
+    renderFleet();
+    status($("conn-status"), "Connesso. Cliente attivo: "+state.targetClient+".", "ok");
     $("conn-info").textContent = "";
   } catch(e){
     status($("conn-status"), "Errore: "+e.message, "err");
   }
+}
+
+// Carica il manifest config del target (Big Ben o cliente) e popola tutte le sezioni.
+async function loadTarget(path, clientId){
+  const branch = $("gh-branch").value.trim();
+  const res = await fetch(contentsUrlFor(path)+"?ref="+encodeURIComponent(branch), { headers: ghHeaders() });
+  if(!res.ok){ throw new Error("HTTP "+res.status+" — "+(await res.text())); }
+  const data = await res.json();
+  state.sha = data.sha;
+  state.targetPath = path;
+  state.targetClient = clientId || "bigbenmatic";
+  state.config = JSON.parse(b64ToUtf8(data.content));
+  $("target-path").textContent = path;
+  renderAll();
+}
+
+// Elenca le sottocartelle di launcher/clients/ (ogni cartella = un cliente).
+async function listClients(){
+  const branch = $("gh-branch").value.trim();
+  const res = await fetch(contentsUrlFor("launcher/clients")+"?ref="+encodeURIComponent(branch), { headers: ghHeaders() });
+  if(res.status===404) return [];
+  if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
+  const arr = await res.json();
+  return arr.filter(e=>e.type==="dir").map(e=>e.name).sort();
+}
+
+async function populateTargetSelect(){
+  const sel = $("target-select"); const prev = state.targetClient;
+  let clients = []; try { clients = await listClients(); } catch(e){ clients = []; }
+  sel.innerHTML = "";
+  const o0 = document.createElement("option"); o0.value="bigbenmatic";
+  o0.textContent="Big Ben Matic (config.json)"; sel.appendChild(o0);
+  clients.forEach(id=>{ const o=document.createElement("option"); o.value=id;
+    o.textContent=id+" (clients/"+id+")"; sel.appendChild(o); });
+  sel.value = (prev==="bigbenmatic" || clients.includes(prev)) ? prev : "bigbenmatic";
 }
 
 // ---- helpers to get nested defaults safely ----
@@ -624,6 +722,144 @@ function renderDevices(){
   });
 }
 
+// ---- ROUTER (fleet.json): assegnazione device -> cliente ----
+function blankFleet(){
+  return { schemaVersion:1, routerVersion:0, updatedAt:null,
+    default:{ clientId:"bigbenmatic", locationId:null, manifestUrl:pagesUrl("launcher/config.json") },
+    devices:{} };
+}
+async function loadFleet(){
+  const branch=$("gh-branch").value.trim();
+  const res=await fetch(contentsUrlFor("launcher/fleet.json")+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+  if(res.status===404){ state.fleet=blankFleet(); state.fleetSha=null; return; }
+  if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
+  const data=await res.json();
+  state.fleetSha=data.sha;
+  state.fleet=JSON.parse(b64ToUtf8(data.content));
+}
+function fleetBox(uuid, ov, isDefault){
+  ov=ov||{};
+  const box=document.createElement("div"); box.className="listitem";
+  if(!isDefault) box.appendChild(lineRemoveBtn(()=>{ box.remove(); }));
+  const r1=document.createElement("div"); r1.className="row";
+  let fUuid=null;
+  if(!isDefault){ fUuid=fieldInput("UUID dispositivo", uuid, {placeholder:"da Diagnostica"}); r1.appendChild(fUuid); }
+  const fClient=fieldInput("Cliente (clientId)", ov.clientId||"bigbenmatic", {placeholder:"bigbenmatic"});
+  const fLoc=fieldInput("Location (locationId)", ov.locationId||"");
+  r1.append(fClient,fLoc); box.appendChild(r1);
+  const fMan=fieldInput("Manifest URL", ov.manifestUrl||"", {placeholder:pagesUrl("launcher/config.json")});
+  box.appendChild(fMan);
+  const sug=document.createElement("button"); sug.type="button"; sug.className="ghost small";
+  sug.textContent="↳ usa il manifest di questo cliente";
+  sug.onclick=()=>{ fMan.__input.value=pagesUrl(pathForClient((fClient.__input.value.trim()||"bigbenmatic"))); };
+  box.appendChild(sug);
+  box.__get=()=>{
+    const cid=fClient.__input.value.trim()||"bigbenmatic";
+    const entry={ clientId:cid, locationId:fLoc.__input.value.trim()||null,
+      manifestUrl:fMan.__input.value.trim()||pagesUrl(pathForClient(cid)) };
+    if(isDefault) return ["__default__", entry];
+    const u=fUuid.__input.value.trim(); if(!u) return null;
+    return [u, entry];
+  };
+  return box;
+}
+function renderFleet(){
+  if(!state.fleet) state.fleet=blankFleet();
+  $("fleet-next-ver").textContent=(Number(state.fleet.routerVersion)||0)+1;
+  const dwrap=$("fleet-default"); dwrap.innerHTML="";
+  state.fleet.default=state.fleet.default||blankFleet().default;
+  dwrap.appendChild(fleetBox(null, state.fleet.default, true));
+  const wrap=$("fleet-list"); wrap.innerHTML="";
+  state.fleet.devices=state.fleet.devices||{};
+  Object.entries(state.fleet.devices).forEach(([uuid,ov])=>{ wrap.appendChild(fleetBox(uuid, ov||{}, false)); });
+}
+function collectFleet(){
+  const f=JSON.parse(JSON.stringify(state.fleet||blankFleet())); // preserva _nota/_esempio…
+  const def=$("fleet-default").firstChild.__get(); f.default=def[1];
+  f.devices={};
+  [...$("fleet-list").children].forEach(b=>{ const e=b.__get&&b.__get(); if(e) f.devices[e[0]]=e[1]; });
+  return f;
+}
+async function saveFleet(){
+  let f; try{ f=collectFleet(); }catch(e){ status($("fleet-status"),"Errore: "+e.message,"err"); return; }
+  f.schemaVersion=f.schemaVersion||1;
+  f.routerVersion=(Number(state.fleet&&state.fleet.routerVersion)||0)+1;
+  f.updatedAt=new Date().toISOString();
+  status($("fleet-status"),"Salvataggio router…","info"); $("btn-save-fleet").disabled=true;
+  try{
+    state.fleetSha=await putJsonFile("launcher/fleet.json", f, "Router fleet v"+f.routerVersion+" (da pannello)");
+    state.fleet=f; $("fleet-next-ver").textContent=f.routerVersion+1;
+    status($("fleet-status"),"✓ Router salvato (v"+f.routerVersion+"). I device leggeranno l'assegnazione al prossimo controllo.","ok");
+  }catch(e){ status($("fleet-status"),"Errore nel salvataggio del router: "+e.message,"err"); }
+  finally{ $("btn-save-fleet").disabled=false; }
+}
+
+// ---- Coerenza gallery web: deriva giochi.json dai giochi web del manifest ----
+function gameFolderFromUrl(url){ const m=(url||"").match(/\/big-ben-giochi\/([^\/]+)\//); return m?m[1]:null; }
+function configGamesToGallery(games){
+  return (games||[]).filter(g=>g.url && gameFolderFromUrl(g.url)).map(g=>{
+    const o={ id:g.id, nome:g.displayName||g.id, cartella:gameFolderFromUrl(g.url), attivo:g.visible!==false };
+    if(g.iconUrl) o.iconImg=g.iconUrl;
+    return o;
+  });
+}
+function galleryPathFor(clientId){
+  return clientId==="bigbenmatic" ? "big-ben-giochi/giochi.json" : "launcher/clients/"+clientId+"/giochi.json";
+}
+// Aggiorna la gallery del cliente preservando i campi extra (colore, descrizione, minEta, icona).
+async function syncGallery(clientId, games){
+  const path=galleryPathFor(clientId);
+  let existing=[];
+  try{
+    const branch=$("gh-branch").value.trim();
+    const r=await fetch(contentsUrlFor(path)+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+    if(r.ok) existing=JSON.parse(b64ToUtf8((await r.json()).content));
+  }catch(e){ existing=[]; }
+  const exById={}; (Array.isArray(existing)?existing:[]).forEach(g=>{ if(g&&g.id) exById[g.id]=g; });
+  const derived=configGamesToGallery(games).map(g=>Object.assign({}, exById[g.id]||{}, g));
+  await putJsonFile(path, derived, "Sync gallery web "+clientId+" (da pannello)");
+}
+
+// ---- Crea un nuovo cliente: cartella clients/<id>/ con config.json + giochi.json ----
+async function newClient(){
+  let id=(prompt("ID nuovo cliente (minuscolo, senza spazi — es. ristorante-rossi):")||"").trim()
+          .toLowerCase().replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"");
+  if(!id) return;
+  if(id==="bigbenmatic"){ alert("'bigbenmatic' è riservato al cliente zero."); return; }
+  status($("conn-status"),"Creazione cliente "+id+"…","info");
+  try{
+    const branch=$("gh-branch").value.trim();
+    const res=await fetch(contentsUrlFor("launcher/config.json")+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const bb=JSON.parse(b64ToUtf8((await res.json()).content));
+    const bd=bb.defaults||{};
+    const cat=((bd.games)||[]).map(g=>Object.assign({}, g, {visible:true}));
+    const cfg={ schemaVersion:1, configVersion:1, updatedAt:new Date().toISOString(),
+      pollIntervalMinutes:bb.pollIntervalMinutes||3,
+      defaults:{
+        branding:{ appTitle:"Giochi per i piccoli ospiti", logoUrl:null, backgroundUrl:null,
+                   primaryColor:"#3346D6", accentColor:"#FDCE72", language:"it" },
+        layout:{ columns:4, tileSize:"large", showLabels:true },
+        kiosk:{ enabled:true, exitPin:"0000", idleTimeoutSeconds:60, sessionLimitSeconds:0,
+                maxVolumePercent:60, brightnessPercent:90, autoLaunchPackage:null },
+        operational:{ status:"active", maintenanceMessage:"Torniamo subito!", banner:{enabled:false,text:"",imageUrl:""} },
+        games:cat,
+        network:{ wifiNetworks:[] },
+        update: bd.update || { latestVersionCode:0, apkUrl:pagesUrl("launcher/apk/launcher-latest.apk"), silentInstall:true },
+        managedApps:[],
+        telemetry: bd.telemetry || { enabled:false, reportUrl:null, reportIntervalMinutes:30,
+                   heartbeatIntervalMinutes:5, sendGameUsage:true, sendDeviceHealth:true }
+      },
+      devices:{} };
+    await putJsonFile("launcher/clients/"+id+"/config.json", cfg, "Nuovo cliente "+id+" (da pannello)");
+    await putJsonFile("launcher/clients/"+id+"/giochi.json", configGamesToGallery(cat), "Gallery cliente "+id+" (da pannello)");
+    await populateTargetSelect();
+    $("target-select").value=id;
+    await loadTarget(pathForClient(id), id);
+    status($("conn-status"),"✓ Cliente "+id+" creato e selezionato. Ora assegnagli i monitor nella sezione 12 (Router).","ok");
+  }catch(e){ status($("conn-status"),"Errore creazione cliente: "+e.message,"err"); }
+}
+
 // ---- COLLECT forms into a config object ----
 function collectConfig(){
   const c = JSON.parse(JSON.stringify(state.config)); // preserve unknown keys
@@ -700,7 +936,11 @@ async function saveConfig(){
     state.config = cfg;
     $("f-configVersion").value = cfg.configVersion;
     $("next-ver").textContent = cfg.configVersion+1;
-    status($("save-status"), "✓ Pubblicato (versione "+cfg.configVersion+"). I tablet si aggiornano entro l'intervallo di polling o al riavvio.", "ok");
+    // Coerenza: aggiorna anche la gallery web (giochi.json) del cliente attivo.
+    let galleryMsg = "";
+    try { await syncGallery(state.targetClient, cfg.defaults.games); galleryMsg = " Gallery web sincronizzata."; }
+    catch(e){ galleryMsg = " (gallery web non aggiornata: "+e.message+")"; }
+    status($("save-status"), "✓ Pubblicato '"+state.targetClient+"' (versione "+cfg.configVersion+")."+galleryMsg+" I tablet si aggiornano entro il polling o al riavvio.", "ok");
   } catch(e){
     status($("save-status"), "Errore nel salvataggio: "+e.message+" — se è un conflitto, ricarica la config.", "err");
   } finally {
@@ -709,8 +949,19 @@ async function saveConfig(){
 }
 
 // ---- wiring ----
-$("btn-load").onclick = loadConfig;
+$("btn-load").onclick = connect;
 $("btn-forget").onclick = ()=>{ localStorage.removeItem(LS.token); $("gh-token").value=""; status($("conn-status"),"Token dimenticato da questo browser.","info"); };
+// Cambio cliente attivo: ricarica il manifest scelto (Big Ben o cliente).
+$("target-select").onchange = async (e)=>{
+  const id=e.target.value;
+  status($("conn-status"),"Carico "+id+"…","info");
+  try{ await loadTarget(pathForClient(id), id); renderFleet();
+       status($("conn-status"),"Cliente attivo: "+id+".","ok"); }
+  catch(err){ status($("conn-status"),"Errore: "+err.message+" — il file del cliente esiste?","err"); }
+};
+$("btn-new-client").onclick = newClient;
+$("btn-add-fleet").onclick = ()=>{ $("fleet-list").appendChild(fleetBox("", {clientId:state.targetClient}, false)); };
+$("btn-save-fleet").onclick = saveFleet;
 $("btn-add-game").onclick = ()=>{ d().games.push({id:"",visible:true,order:(d().games.length+1)}); renderGames(); refreshPreview(); };
 $("btn-add-app").onclick = ()=>{ d().managedApps.push({packageName:"",action:"install",versionCode:0}); renderApps(); refreshPreview(); };
 $("btn-add-wifi").onclick = ()=>{ obj(d(),"network").wifiNetworks.push({ssid:"",password:"",priority:0,hidden:false}); renderWifi(); refreshPreview(); };
