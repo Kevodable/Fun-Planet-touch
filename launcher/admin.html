@@ -373,23 +373,34 @@ function contentsUrlFor(path){
 // URL del file config attualmente selezionato (Big Ben o cliente).
 function contentsUrl(){ return contentsUrlFor(state.targetPath); }
 
+// Lettura "fresca" che bypassa la cache HTTP (GitHub mette max-age=60 sulle GET,
+// che farebbe leggere uno sha vecchio -> conflitto 409 in scrittura).
+function ghGet(path){
+  const branch=$("gh-branch").value.trim();
+  const url=contentsUrlFor(path)+"?ref="+encodeURIComponent(branch)+"&_="+Date.now();
+  return fetch(url, { headers:ghHeaders(), cache:"no-store" });
+}
 // Legge lo sha corrente di un file (null se non esiste): serve per aggiornarlo via API.
 async function getSha(path){
-  const branch=$("gh-branch").value.trim();
-  const res=await fetch(contentsUrlFor(path)+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+  const res=await ghGet(path);
   if(res.status===404) return null;
   if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
   return (await res.json()).sha;
 }
-// Scrive (crea o aggiorna) un file JSON nel repo. Ritorna lo sha nuovo.
+// Scrive (crea o aggiorna) un file JSON nel repo. Rilegge lo sha al volo e ritenta
+// una volta su 409 (conflitto sha), così un salvataggio non fallisce per cache stantia.
 async function putJsonFile(path, obj, message){
   const branch=$("gh-branch").value.trim();
-  const sha=await getSha(path);
-  const body={ message, content:utf8ToB64(JSON.stringify(obj,null,2)+"\n"), branch };
-  if(sha) body.sha=sha;
-  const res=await fetch(contentsUrlFor(path), { method:"PUT", headers:ghHeaders(), body:JSON.stringify(body) });
-  if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
-  return (await res.json()).content.sha;
+  const content=utf8ToB64(JSON.stringify(obj,null,2)+"\n");
+  for(let attempt=0; attempt<2; attempt++){
+    const sha=await getSha(path);
+    const body={ message, content, branch };
+    if(sha) body.sha=sha;
+    const res=await fetch(contentsUrlFor(path), { method:"PUT", headers:ghHeaders(), body:JSON.stringify(body) });
+    if(res.ok) return (await res.json()).content.sha;
+    if(res.status===409 && attempt===0) continue; // sha stantio: rileggi e riprova
+    throw new Error("HTTP "+res.status+" — "+(await res.text()));
+  }
 }
 
 // ---- Upload immagini su GitHub (logo, sfondo, icone giochi) ----
@@ -453,7 +464,7 @@ async function connect(){
 // Carica il manifest config del target (Big Ben o cliente) e popola tutte le sezioni.
 async function loadTarget(path, clientId){
   const branch = $("gh-branch").value.trim();
-  const res = await fetch(contentsUrlFor(path)+"?ref="+encodeURIComponent(branch), { headers: ghHeaders() });
+  const res = await ghGet(path);
   if(!res.ok){ throw new Error("HTTP "+res.status+" — "+(await res.text())); }
   const data = await res.json();
   state.sha = data.sha;
@@ -467,7 +478,7 @@ async function loadTarget(path, clientId){
 // Elenca le sottocartelle di launcher/clients/ (ogni cartella = un cliente).
 async function listClients(){
   const branch = $("gh-branch").value.trim();
-  const res = await fetch(contentsUrlFor("launcher/clients")+"?ref="+encodeURIComponent(branch), { headers: ghHeaders() });
+  const res = await ghGet("launcher/clients");
   if(res.status===404) return [];
   if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
   const arr = await res.json();
@@ -730,7 +741,7 @@ function blankFleet(){
 }
 async function loadFleet(){
   const branch=$("gh-branch").value.trim();
-  const res=await fetch(contentsUrlFor("launcher/fleet.json")+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+  const res=await ghGet("launcher/fleet.json");
   if(res.status===404){ state.fleet=blankFleet(); state.fleetSha=null; return; }
   if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
   const data=await res.json();
@@ -812,7 +823,7 @@ async function syncGallery(clientId, games){
   let existing=[];
   try{
     const branch=$("gh-branch").value.trim();
-    const r=await fetch(contentsUrlFor(path)+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+    const r=await ghGet(path);
     if(r.ok) existing=JSON.parse(b64ToUtf8((await r.json()).content));
   }catch(e){ existing=[]; }
   const exById={}; (Array.isArray(existing)?existing:[]).forEach(g=>{ if(g&&g.id) exById[g.id]=g; });
@@ -829,7 +840,7 @@ async function newClient(){
   status($("conn-status"),"Creazione cliente "+id+"…","info");
   try{
     const branch=$("gh-branch").value.trim();
-    const res=await fetch(contentsUrlFor("launcher/config.json")+"?ref="+encodeURIComponent(branch), { headers:ghHeaders() });
+    const res=await ghGet("launcher/config.json");
     if(!res.ok) throw new Error("HTTP "+res.status);
     const bb=JSON.parse(b64ToUtf8((await res.json()).content));
     const bd=bb.defaults||{};
@@ -920,18 +931,22 @@ async function saveConfig(){
   catch(e){ status($("save-status"), "Controlla gli override JSON dei dispositivi: "+e.message, "err"); return; }
   cfg.configVersion = (Number(state.config.configVersion)||0) + 1;
   cfg.updatedAt = new Date().toISOString();
-  const body = {
-    message: "Config flotta v"+cfg.configVersion+" (da pannello web)",
-    content: utf8ToB64(JSON.stringify(cfg, null, 2) + "\n"),
-    sha: state.sha,
-    branch: $("gh-branch").value.trim(),
-  };
+  const message = "Config "+state.targetClient+" v"+cfg.configVersion+" (da pannello web)";
+  const content = utf8ToB64(JSON.stringify(cfg, null, 2) + "\n");
+  const branch = $("gh-branch").value.trim();
   status($("save-status"), "Salvataggio in corso…", "info");
   $("btn-save").disabled = true;
   try {
-    const res = await fetch(contentsUrl(), { method:"PUT", headers:ghHeaders(), body:JSON.stringify(body) });
-    if(!res.ok){ throw new Error("HTTP "+res.status+" — "+(await res.text())); }
-    const data = await res.json();
+    // Rilegge lo sha al volo (bypassando la cache) e ritenta una volta su 409.
+    let data;
+    for(let attempt=0; attempt<2; attempt++){
+      const sha = await getSha(state.targetPath);
+      const body = { message, content, branch }; if(sha) body.sha = sha;
+      const res = await fetch(contentsUrl(), { method:"PUT", headers:ghHeaders(), body:JSON.stringify(body) });
+      if(res.ok){ data = await res.json(); break; }
+      if(res.status===409 && attempt===0) continue;
+      throw new Error("HTTP "+res.status+" — "+(await res.text()));
+    }
     state.sha = data.content.sha;
     state.config = cfg;
     $("f-configVersion").value = cfg.configVersion;
