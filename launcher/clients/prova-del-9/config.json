@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "configVersion": 1,
-  "updatedAt": "2026-06-24T10:23:04.809Z",
+  "configVersion": 2,
+  "updatedAt": "2026-06-24T12:21:53.127Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
       "appTitle": "Giochi per i piccoli ospiti",
-      "logoUrl": null,
-      "backgroundUrl": null,
+      "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image0-photoroom-1782303576029.png",
+      "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/progetto-senza-titolo-1-1782303677600.png",
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
       "language": "it"
@@ -115,6 +115,7 @@
       },
       {
         "id": "labirinto",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/labirinto/index.html",
         "displayName": "Labirinto",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/labirinto.png",
