@@ -625,6 +625,11 @@ function renderGames(){
       category:fCat.__input.value.trim()||null, order:Number(fOrder.__input.value)||0,
       visible:fVis.__input.checked, sessionLimitSeconds:Number(fLimit.__input.value)||0
     });
+    // Propaga questo gioco a TUTTI gli altri manifest (Big Ben + clienti)
+    const propBtn=document.createElement("button"); propBtn.type="button"; propBtn.className="ghost small";
+    propBtn.style.marginTop="8px"; propBtn.textContent="↪ Aggiungi questo gioco a tutti i clienti";
+    propBtn.onclick=()=>propagateGame(box.__get());
+    box.appendChild(propBtn);
     wrap.appendChild(box);
   });
 }
@@ -850,6 +855,39 @@ async function syncGallery(clientId, games){
   const exById={}; (Array.isArray(existing)?existing:[]).forEach(g=>{ if(g&&g.id) exById[g.id]=g; });
   const derived=configGamesToGallery(games).map(g=>Object.assign({}, exById[g.id]||{}, g));
   await putJsonFile(path, derived, "Sync gallery web "+clientId+" (da pannello)");
+}
+
+// ---- Propaga un gioco a TUTTI i manifest (Big Ben + ogni cliente) ----
+// Aggiunge (o aggiorna) il gioco in ogni manifest diverso da quello attuale,
+// lo rende visibile, salva e sincronizza la gallery di ciascuno.
+async function propagateGame(game){
+  if(!game || !game.id){ alert("Compila prima l'ID del gioco, poi riprova."); return; }
+  let clients=[]; try{ clients=await listClients(); }catch(e){ clients=[]; }
+  const targets=["bigbenmatic", ...clients].filter(t=>t!==state.targetClient);
+  if(!targets.length){ alert("Non ci sono altri manifest a cui aggiungere il gioco."); return; }
+  if(!confirm('Aggiungo "'+(game.displayName||game.id)+'" a '+targets.length+' manifest:\n'+targets.join(", ")+'\nVerranno salvati e pubblicati. Procedo?')) return;
+  status($("save-status"),"Propagazione del gioco in corso…","info");
+  let ok=0; const errs=[];
+  for(const t of targets){
+    try{
+      const path=pathForClient(t);
+      const res=await ghGet(path);
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const cfg=JSON.parse(b64ToUtf8((await res.json()).content));
+      cfg.defaults=cfg.defaults||{}; const games=cfg.defaults.games=cfg.defaults.games||[];
+      const idx=games.findIndex(x=>x&&x.id===game.id);
+      const maxOrder=games.reduce((m,x)=>Math.max(m, Number(x.order)||0), 0);
+      const entry=Object.assign({}, game, { visible:true,
+        order: idx>=0 ? (games[idx].order ?? maxOrder+1) : maxOrder+1 });
+      if(idx>=0) games[idx]=Object.assign({}, games[idx], entry); else games.push(entry);
+      cfg.configVersion=(Number(cfg.configVersion)||0)+1;
+      cfg.updatedAt=new Date().toISOString();
+      await putJsonFile(path, cfg, "Aggiunto gioco "+game.id+" a "+t+" (propagazione da pannello)");
+      try{ await syncGallery(t, cfg.defaults.games); }catch(_){}
+      ok++;
+    }catch(e){ errs.push(t+": "+e.message); }
+  }
+  status($("save-status"), "✓ Gioco aggiunto a "+ok+"/"+targets.length+" manifest."+(errs.length?" Errori: "+errs.join("; "):"")+" (il manifest attivo '"+state.targetClient+"' non è stato toccato: salvalo da qui se serve.)", errs.length?"err":"ok");
 }
 
 // ---- Crea un nuovo cliente: cartella clients/<id>/ con config.json + giochi.json ----
