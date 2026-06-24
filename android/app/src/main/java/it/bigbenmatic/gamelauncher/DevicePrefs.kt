@@ -20,6 +20,29 @@ class DevicePrefs(context: Context) {
         prefs.edit().putInt(KEY_CONFIG_VERSION, version).apply()
     }
 
+    /** Last manifest URL the router resolved for this device (multi-tenant). Cached so the
+     * device can keep loading its own client's manifest even if the router is briefly
+     * unreachable. Null until the first successful router resolution. */
+    fun getResolvedManifestUrl(): String? = prefs.getString(KEY_MANIFEST_URL, null)
+
+    fun setResolvedManifestUrl(url: String) {
+        prefs.edit().putString(KEY_MANIFEST_URL, url).apply()
+    }
+
+    /** Tenant identity resolved by the router (for telemetry + diagnostics). Defaults to the
+     * "cliente zero" Big Ben Matic so legacy devices report a sensible value. */
+    fun getClientId(): String = prefs.getString(KEY_CLIENT_ID, DEFAULT_CLIENT_ID) ?: DEFAULT_CLIENT_ID
+
+    fun setClientId(clientId: String) {
+        prefs.edit().putString(KEY_CLIENT_ID, clientId).apply()
+    }
+
+    fun getLocationId(): String? = prefs.getString(KEY_LOCATION_ID, null)
+
+    fun setLocationId(locationId: String?) {
+        prefs.edit().putString(KEY_LOCATION_ID, locationId).apply()
+    }
+
     fun getLastTelemetrySuccessMillis(): Long = prefs.getLong(KEY_LAST_TELEMETRY_OK, 0L)
 
     fun setLastTelemetrySuccessMillis(millis: Long) {
@@ -53,8 +76,12 @@ class DevicePrefs(context: Context) {
     }
 
     companion object {
+        const val DEFAULT_CLIENT_ID = "bigbenmatic"
         private const val KEY_CONFIG_JSON = "cached_config_json"
         private const val KEY_CONFIG_VERSION = "cached_config_version"
+        private const val KEY_MANIFEST_URL = "resolved_manifest_url"
+        private const val KEY_CLIENT_ID = "resolved_client_id"
+        private const val KEY_LOCATION_ID = "resolved_location_id"
         private const val KEY_LAST_TELEMETRY_OK = "last_telemetry_success_millis"
         private const val KEY_LAST_CONN_STATUS = "last_connection_status"
         private const val KEY_WIFI_SSID = "lifeline_wifi_ssid"

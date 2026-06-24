@@ -35,10 +35,15 @@ class ConfigRepository(context: Context) {
         return runCatching { RemoteConfigParser.parse(cached, deviceId) }.getOrNull()
     }
 
-    /** Fetches config.json, applies it only if `configVersion` changed, and persists it
-     * for offline use. Safe to call repeatedly from a polling loop. */
+    /** Fetches the device's manifest, applies it only if `configVersion` changed, and
+     * persists it for offline use. Safe to call repeatedly from a polling loop.
+     *
+     * Multi-tenant: first resolves which manifest to load via the router (see
+     * [resolveManifestUrl]); the rest of the pipeline is identical to the single-file flow. */
     fun refresh() {
-        val raw = runCatching { download(FLEET_CONFIG_URL) }.getOrNull()
+        val manifestUrl = resolveManifestUrl()
+
+        val raw = runCatching { download(manifestUrl) }.getOrNull()
         if (raw == null) {
             _connectionStatus.value = ConnectionStatus.OFFLINE
             return
@@ -60,6 +65,27 @@ class ConfigRepository(context: Context) {
         devicePrefs.setConfigVersion(parsed.configVersion)
         _config.value = parsed
         Log.i(TAG, "Config aggiornata: v$previousVersion -> v${parsed.configVersion}")
+    }
+
+    /**
+     * Resolves which manifest URL to download for this device.
+     *  - Tries the router (`fleet.json`); on success persists manifestUrl + tenant identity.
+     *  - If the router is unreachable or the device isn't mapped, reuses the last resolved
+     *    manifest, and as a final fallback the legacy [FLEET_CONFIG_URL] — so a device with
+     *    no router entry (and every currently installed Big Ben monitor) keeps working.
+     */
+    private fun resolveManifestUrl(): String {
+        val routerRaw = runCatching { download(FLEET_ROUTER_URL) }.getOrNull()
+        if (routerRaw != null) {
+            val route = runCatching { FleetRouterParser.resolve(routerRaw, deviceId) }.getOrNull()
+            if (route != null) {
+                devicePrefs.setResolvedManifestUrl(route.manifestUrl)
+                devicePrefs.setClientId(route.clientId)
+                devicePrefs.setLocationId(route.locationId)
+                return route.manifestUrl
+            }
+        }
+        return devicePrefs.getResolvedManifestUrl() ?: FLEET_CONFIG_URL
     }
 
     private fun download(urlString: String): String {

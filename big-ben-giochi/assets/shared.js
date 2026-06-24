@@ -88,7 +88,9 @@
           return;
         }
       } catch (e) { /* ignora errori del bridge e usa il fallback */ }
-      window.location.href = "../index.html";
+      // Fallback web: torna alla gallery preservando ?client (contesto multi-tenant)
+      var client = new URLSearchParams(window.location.search).get("client");
+      window.location.href = "../index.html" + (client ? "?client=" + encodeURIComponent(client) : "");
     },
 
     /* Riproduce un suono di gioco: "pop" | "match" | "win" | "error" */
