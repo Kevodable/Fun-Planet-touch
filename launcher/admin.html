@@ -71,6 +71,12 @@
     position: sticky; bottom: 0; background: rgba(238,242,251,.95); backdrop-filter: blur(4px);
     border-top: 1px solid var(--border); padding: 12px 0; margin-top: 8px;
   }
+  /* Titoli che separano le due aree: Flotta/Assegnazioni vs Configurazione cliente */
+  .area-title {
+    margin: 24px 2px 10px; font-size: 18px; color: var(--primary);
+    border-bottom: 2px solid var(--border); padding-bottom: 8px;
+  }
+  .area-title small { display: block; font-size: 12.5px; font-weight: 400; color: var(--muted); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -107,6 +113,35 @@
     </div>
     <div class="status" id="conn-status"></div>
   </div>
+
+  <!-- ============ AREA FLOTTA / ASSEGNAZIONI (globale) ============ -->
+  <h2 class="area-title" id="area-fleet" style="display:none">🚦 Flotta e assegnazioni
+    <small>vale per TUTTI i clienti · file <code>fleet.json</code></small></h2>
+
+  <!-- ROUTER CLIENTI (fleet.json) -->
+  <div class="card" id="fleet-card" style="display:none">
+    <h2>Assegna i monitor ai clienti</h2>
+    <p class="hint">
+      Qui decidi <b>quale cliente</b> serve ogni monitor. Un device non elencato usa il
+      <b>default</b> (Big Ben). L'<b>UUID</b> si legge sul tablet in <b>Diagnostica → ID dispositivo</b>.
+      Questa tabella si salva <b>a parte</b>, col suo pulsante in fondo.
+      <br>↳ Dopo aver assegnato un monitor, vai nell'area <b>«Configurazione del cliente»</b> qui sotto
+      per impostarne branding e giochi.
+    </p>
+    <div style="font-size:13px;font-weight:600;color:#444;margin:6px 0 2px">Default (fallback per i device non elencati)</div>
+    <div id="fleet-default"></div>
+    <div style="font-size:13px;font-weight:600;color:#444;margin:12px 0 2px">Monitor assegnati</div>
+    <div id="fleet-list"></div>
+    <button class="ghost small" id="btn-add-fleet">+ Assegna monitor a un cliente</button>
+    <div class="toolbar" style="margin-top:12px">
+      <button id="btn-save-fleet">💾 Salva assegnazioni (versione <span id="fleet-next-ver" class="ver"></span>)</button>
+    </div>
+    <div class="status" id="fleet-status"></div>
+  </div>
+
+  <!-- ============ AREA CONFIGURAZIONE DEL CLIENTE ============ -->
+  <h2 class="area-title" id="area-client" style="display:none">🎨 Configurazione del cliente
+    <small>branding, giochi e impostazioni del cliente selezionato</small></h2>
 
   <!-- CLIENTE ATTIVO (multi-tenant) -->
   <div class="card" id="tenant" style="display:none">
@@ -264,37 +299,18 @@
 
     <!-- DISPOSITIVI -->
     <div class="card">
-      <h2>11 · Impostazioni per singolo monitor (per locale)</h2>
+      <h2>11 · Ritocchi per questo monitor (dentro il cliente)</h2>
       <p class="hint">
-        Le sezioni qui sopra valgono per <b>tutta la flotta</b>. Qui invece imposti modifiche
-        <b>solo per un tablet</b>: aggiungi il suo <b>ID dispositivo</b> (lo leggi dalla schermata
-        Diagnostica) e compila ciò che vuoi diverso per quel locale — <b>branding</b> (titolo,
-        colori, logo, sfondo) e <b>quali giochi mostrare</b>. I campi lasciati vuoti / le caselle
-        non toccate ereditano i default della flotta.
+        Le sezioni 2–10 valgono per <b>tutti i monitor di questo cliente</b>. Qui invece cambi qualcosa
+        <b>solo per un singolo tablet</b>: incolla il suo <b>ID dispositivo</b> (da <b>Diagnostica</b>) e
+        compila ciò che vuoi diverso — <b>etichetta</b> (il nome dello schermo, es. <i>Sala bimbi</i>),
+        <b>branding</b> e <b>quali giochi mostrare</b>. I campi vuoti / le caselle non toccate ereditano i
+        valori del cliente.
+        <br>↳ Prima però il monitor va <b>assegnato a questo cliente</b> nell'area
+        <b>«Flotta e assegnazioni»</b> in alto.
       </p>
       <div id="devices-list"></div>
       <button class="ghost small" id="btn-add-device">+ Aggiungi monitor</button>
-    </div>
-
-    <!-- ROUTER CLIENTI (fleet.json) -->
-    <div class="card">
-      <h2>12 · Router clienti (assegnazione monitor → cliente)</h2>
-      <p class="hint">
-        Questo è il file <code>fleet.json</code>: dice a ogni monitor <b>quale cliente</b> servire.
-        Un device non elencato usa il <b>default</b> (Big Ben). L'<b>UUID</b> si legge sul tablet in
-        <b>Diagnostica → ID dispositivo</b>. Si salva separatamente col suo pulsante qui sotto.
-        <br>⚠ Da non confondere con la sezione 11: lì regoli i dettagli <i>dentro</i> un cliente,
-        qui assegni il monitor <i>a</i> un cliente.
-      </p>
-      <div style="font-size:13px;font-weight:600;color:#444;margin:6px 0 2px">Default (fallback per i device non elencati)</div>
-      <div id="fleet-default"></div>
-      <div style="font-size:13px;font-weight:600;color:#444;margin:12px 0 2px">Monitor assegnati</div>
-      <div id="fleet-list"></div>
-      <button class="ghost small" id="btn-add-fleet">+ Assegna monitor a un cliente</button>
-      <div class="toolbar" style="margin-top:12px">
-        <button id="btn-save-fleet">💾 Salva router (versione <span id="fleet-next-ver" class="ver"></span>)</button>
-      </div>
-      <div class="status" id="fleet-status"></div>
     </div>
 
     <!-- AVANZATO -->
@@ -451,6 +467,11 @@ async function connect(){
     await loadFleet();              // router fleet.json (tollera l'assenza)
     await populateTargetSelect();   // elenco clienti dalla cartella launcher/clients/
     await loadTarget(pathForClient(state.targetClient), state.targetClient);
+    // Area Flotta/Assegnazioni (globale)
+    $("area-fleet").style.display = "";
+    $("fleet-card").style.display = ""; $("fleet-card").classList.remove("collapsed");
+    // Area Configurazione del cliente
+    $("area-client").style.display = "";
     $("tenant").style.display = ""; $("tenant").classList.remove("collapsed");
     $("editor").style.display = "";
     renderFleet();
@@ -666,8 +687,8 @@ function renderDevices(){
     const box=document.createElement("div"); box.className="listitem";
     box.appendChild(lineRemoveBtn(()=>{ delete state.config.devices[id]; renderDevices(); refreshPreview(); }));
     const r1=document.createElement("div"); r1.className="row";
-    const fId=fieldInput("ID dispositivo", id, {placeholder:"da schermata Diagnostica"});
-    const fLabel=fieldInput("Etichetta (nome locale)", ov.label||"");
+    const fId=fieldInput("ID dispositivo (UUID, da Diagnostica)", id, {placeholder:"es. 256e7f33-…"});
+    const fLabel=fieldInput("Etichetta — nome di questo schermo (es. Sala bimbi)", ov.label||"");
     r1.append(fId,fLabel); box.appendChild(r1);
 
     // --- Branding del locale: si sovrascrivono SOLO i campi compilati,
@@ -754,11 +775,11 @@ function fleetBox(uuid, ov, isDefault){
   if(!isDefault) box.appendChild(lineRemoveBtn(()=>{ box.remove(); }));
   const r1=document.createElement("div"); r1.className="row";
   let fUuid=null;
-  if(!isDefault){ fUuid=fieldInput("UUID dispositivo", uuid, {placeholder:"da Diagnostica"}); r1.appendChild(fUuid); }
-  const fClient=fieldInput("Cliente (clientId)", ov.clientId||"bigbenmatic", {placeholder:"bigbenmatic"});
-  const fLoc=fieldInput("Location (locationId)", ov.locationId||"");
+  if(!isDefault){ fUuid=fieldInput("UUID dispositivo (da Diagnostica)", uuid, {placeholder:"es. 256e7f33-…"}); r1.appendChild(fUuid); }
+  const fClient=fieldInput("Cliente — l'azienda/insegna (clientId)", ov.clientId||"bigbenmatic", {placeholder:"es. ristorante-rossi"});
+  const fLoc=fieldInput("Sede del cliente (locationId) — facoltativa", ov.locationId||"", {placeholder:"es. rossi-milano"});
   r1.append(fClient,fLoc); box.appendChild(r1);
-  const fMan=fieldInput("Manifest URL", ov.manifestUrl||"", {placeholder:pagesUrl("launcher/config.json")});
+  const fMan=fieldInput("Manifest URL (compilato dal pulsante qui sotto)", ov.manifestUrl||"", {placeholder:pagesUrl("launcher/config.json")});
   box.appendChild(fMan);
   const sug=document.createElement("button"); sug.type="button"; sug.className="ghost small";
   sug.textContent="↳ usa il manifest di questo cliente";
