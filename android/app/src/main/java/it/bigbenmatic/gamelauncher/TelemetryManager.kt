@@ -34,6 +34,8 @@ class TelemetryManager(context: Context) {
         val payload = JSONObject().apply {
             put("type", "heartbeat")
             put("deviceId", deviceId)
+            put("clientId", devicePrefs.getClientId())
+            put("locationId", devicePrefs.getLocationId() ?: "")
             put("label", config?.deviceLabel ?: "")
             put("timestamp", isoNow())
             put("configVersion", config?.configVersion ?: -1)
@@ -56,6 +58,8 @@ class TelemetryManager(context: Context) {
         val payload = JSONObject().apply {
             put("type", "report")
             put("deviceId", deviceId)
+            put("clientId", devicePrefs.getClientId())
+            put("locationId", devicePrefs.getLocationId() ?: "")
             put("label", config?.deviceLabel ?: "")
             put("appVersion", appVersionCode())
             put("configVersion", config?.configVersion ?: -1)

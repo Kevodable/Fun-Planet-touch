@@ -48,6 +48,8 @@ function appendTelemetryRow_(ss, data) {
     new Date(),                       // ricevuto il
     data.type || '',                  // heartbeat | report
     data.deviceId || '',
+    data.clientId || '',              // multi-tenant: cliente
+    data.locationId || '',            // multi-tenant: location
     data.label || '',
     data.timestamp || '',
     data.appVersion != null ? data.appVersion : '',
@@ -68,6 +70,8 @@ function upsertDeviceStatus_(ss, data) {
   }
   var values = [
     data.deviceId || '',
+    data.clientId || '',
+    data.locationId || '',
     data.label || '',
     new Date(),
     data.appVersion != null ? data.appVersion : '',
@@ -90,7 +94,7 @@ function setup() {
 function createTelemetrySheet_(ss) {
   var sheet = ss.insertSheet(SHEET_TELEMETRY);
   sheet.appendRow([
-    'Ricevuto il', 'Tipo', 'Device ID', 'Etichetta', 'Timestamp dispositivo',
+    'Ricevuto il', 'Tipo', 'Device ID', 'Cliente', 'Location', 'Etichetta', 'Timestamp dispositivo',
     'App version', 'Config version', 'Batteria %', 'Uptime (s)', 'Giochi (id:lanci)',
   ]);
   sheet.setFrozenRows(1);
@@ -100,7 +104,7 @@ function createTelemetrySheet_(ss) {
 function createStatusSheet_(ss) {
   var sheet = ss.insertSheet(SHEET_STATUS);
   sheet.appendRow([
-    'Device ID', 'Etichetta', 'Ultimo contatto', 'App version', 'Config version', 'Batteria %',
+    'Device ID', 'Cliente', 'Location', 'Etichetta', 'Ultimo contatto', 'App version', 'Config version', 'Batteria %',
   ]);
   sheet.setFrozenRows(1);
   return sheet;
@@ -122,13 +126,16 @@ function checkOfflineMonitors() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_STATUS);
   if (!sheet || sheet.getLastRow() < 2) return;
-  var rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 3).getValues();
+  // Colonne: 1=Device ID, 2=Cliente, 3=Location, 4=Etichetta, 5=Ultimo contatto
+  var rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getValues();
   var now = new Date().getTime();
   rows.forEach(function (r) {
-    var lastSeen = r[2] ? new Date(r[2]).getTime() : 0;
+    var deviceId = r[0], clientId = r[1], locationId = r[2], label = r[3];
+    var lastSeen = r[4] ? new Date(r[4]).getTime() : 0;
     var hours = (now - lastSeen) / 3600000;
     if (hours > maxHoursOffline) {
-      // sendTelegramAlert_('Monitor offline: ' + r[1] + ' (' + r[0] + ') da ' + Math.round(hours) + 'h');
+      var who = (clientId || '?') + (locationId ? '/' + locationId : '') + ' — ' + (label || deviceId);
+      // sendTelegramAlert_('Monitor offline: ' + who + ' da ' + Math.round(hours) + 'h');
     }
   });
 }

@@ -685,6 +685,10 @@ private fun DiagnosticsScreen(
         Spacer(Modifier.height(16.dp))
 
         DiagnosticRow("ID dispositivo", deviceId)
+        DiagnosticRow(
+            "Cliente / location",
+            devicePrefs.getClientId() + (devicePrefs.getLocationId()?.let { " / $it" } ?: ""),
+        )
         DiagnosticRow("Etichetta (label)", config?.deviceLabel ?: "— (non assegnata nel config remoto)")
         DiagnosticRow("Versione app", appVersion.toString())
         DiagnosticRow("Versione config attiva", config?.configVersion?.toString() ?: "nessuna")
