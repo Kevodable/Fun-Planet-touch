@@ -10,12 +10,15 @@ web su GitHub Pages, gestiti da remoto via `launcher/config.json` e dal pannello
 > pertinente (es. prima di distribuire su più tablet, o quando si lavora
 > sull'admin / sul branding).
 
-1. **Chiave di firma Android permanente (release keystore).**
-   Oggi gli APK sono firmati con la chiave di *debug* (ok per i test, valida solo
-   in questo container). Prima della **distribuzione definitiva** su più tablet
-   va creata una **keystore di release stabile**, configurato il signing in
-   `android/app/build.gradle.kts` e rifatta la prima installazione via cavo
-   (poi gli OTA successivi funzionano con la chiave di release).
+1. **Chiave di firma Android permanente (release keystore).** ✅ CREATA.
+   La keystore di release esiste (alias `bigbenmatic`, RSA 4096, SHA-256
+   `e12c01bb…`); il signing è configurato in `android/app/build.gradle.kts`
+   (legge `android/keystore.properties`, gitignorato). Keystore + password sono
+   **fuori dal repo**, consegnate a Kevin: vanno **backuppate per sempre**.
+   Dettagli in `android/SIGNING.md`. RESTA da fare alla distribuzione sui monitor
+   definitivi: prima installazione via cavo con l'**APK di release** e cutover
+   dell'OTA (`launcher-latest.apk`) sulla chiave di release. Gli APK di *debug*
+   (SHA-256 `c23a3cc0…`) restano solo per i 2 tablet di test.
 
 2. **Branding per-locale + caricamento immagini nell'admin.**
    Implementare in `launcher/admin.html`: (a) **upload immagini** via API GitHub
