@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 3,
-  "updatedAt": "2026-06-24T12:57:42.310Z",
+  "configVersion": 4,
+  "updatedAt": "2026-06-24T13:03:52.595Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -148,33 +148,7 @@
       "label": "Ufficio big ben",
       "branding": {
         "appTitle": "benvenutii"
-      },
-      "games": [
-        {
-          "id": "memory",
-          "visible": false
-        },
-        {
-          "id": "talpe",
-          "visible": false
-        },
-        {
-          "id": "frutta",
-          "visible": false
-        },
-        {
-          "id": "sequenza",
-          "visible": false
-        },
-        {
-          "id": "lavagna",
-          "visible": false
-        },
-        {
-          "id": "labirinto",
-          "visible": false
-        }
-      ]
+      }
     }
   }
 }
