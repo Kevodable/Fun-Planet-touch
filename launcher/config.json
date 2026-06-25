@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 40,
-  "updatedAt": "2026-06-24T10:05:00.000Z",
+  "configVersion": 41,
+  "updatedAt": "2026-06-25T09:19:28.679Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -14,7 +14,7 @@
     },
     "layout": {
       "columns": 4,
-      "tileSize": "large",
+      "tileSize": "small",
       "showLabels": true
     },
     "kiosk": {
@@ -115,6 +115,7 @@
       },
       {
         "id": "labirinto",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/labirinto/index.html",
         "displayName": "Labirinto",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/labirinto.png",
@@ -125,6 +126,7 @@
       },
       {
         "id": "forme",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/forme/index.html",
         "displayName": "Abbina le forme",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/forme.png",
