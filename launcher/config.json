@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 41,
-  "updatedAt": "2026-06-25T09:19:28.679Z",
+  "configVersion": 42,
+  "updatedAt": "2026-06-25T09:23:18.384Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -13,8 +13,8 @@
       "language": "it"
     },
     "layout": {
-      "columns": 4,
-      "tileSize": "small",
+      "columns": 5,
+      "tileSize": "large",
       "showLabels": true
     },
     "kiosk": {
