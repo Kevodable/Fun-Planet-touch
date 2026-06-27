@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 40,
-  "updatedAt": "2026-06-24T10:05:00.000Z",
+  "configVersion": 41,
+  "updatedAt": "2026-06-24T13:00:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -142,7 +142,7 @@
       ]
     },
     "update": {
-      "latestVersionCode": 9,
+      "latestVersionCode": 10,
       "apkUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/apk/launcher-latest.apk",
       "silentInstall": true
     },
@@ -167,6 +167,13 @@
       "heartbeatIntervalMinutes": 5,
       "sendGameUsage": true,
       "sendDeviceHealth": true
+    },
+    "attract": {
+      "enabled": false,
+      "idleSeconds": 60,
+      "itemSeconds": 8,
+      "muteVideo": true,
+      "items": []
     }
   },
   "devices": {
