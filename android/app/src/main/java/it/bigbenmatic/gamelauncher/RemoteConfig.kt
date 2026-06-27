@@ -85,6 +85,23 @@ data class TelemetryConfig(
     val sendDeviceHealth: Boolean = true,
 )
 
+/** Un elemento del loop pubblicitario / attract: un'immagine o un video (per URL). */
+data class AttractItem(
+    val type: String,    // "image" | "video"
+    val url: String,
+    val seconds: Int = 0, // durata immagine; 0 = usa itemSeconds
+)
+
+/** Schermo pubblicitario in inattività: dalla home, dopo `idleSeconds` senza tocchi,
+ *  scorre i media a tutto schermo finché qualcuno tocca lo schermo. */
+data class AttractConfig(
+    val enabled: Boolean = false,
+    val idleSeconds: Int = 60,
+    val itemSeconds: Int = 8,
+    val muteVideo: Boolean = true,
+    val items: List<AttractItem> = emptyList(),
+)
+
 data class ResolvedConfig(
     val schemaVersion: Int,
     val configVersion: Int,
@@ -99,6 +116,7 @@ data class ResolvedConfig(
     val managedApps: List<ManagedApp>,
     val telemetry: TelemetryConfig,
     val wifiNetworks: List<WifiNetwork>,
+    val attract: AttractConfig,
 )
 
 /** Parses the fleet config.json and resolves the effective settings for [deviceId],
@@ -135,6 +153,9 @@ object RemoteConfigParser {
         val wifiNetworks = parseWifi(
             mergeObjects(defaults.optJSONObject("network"), deviceOverride?.optJSONObject("network"))
         )
+        val attract = parseAttract(
+            mergeObjects(defaults.optJSONObject("attract"), deviceOverride?.optJSONObject("attract"))
+        )
 
         return ResolvedConfig(
             schemaVersion = root.optInt("schemaVersion", 1),
@@ -150,6 +171,30 @@ object RemoteConfigParser {
             managedApps = managedApps,
             telemetry = telemetry,
             wifiNetworks = wifiNetworks,
+            attract = attract,
+        )
+    }
+
+    private fun parseAttract(o: JSONObject): AttractConfig {
+        val arr = o.optJSONArray("items")
+        val items = mutableListOf<AttractItem>()
+        if (arr != null) for (i in 0 until arr.length()) {
+            val it = arr.optJSONObject(i) ?: continue
+            val url = it.optStringOrNull("url") ?: continue
+            items.add(
+                AttractItem(
+                    type = it.optString("type", "image").ifBlank { "image" },
+                    url = url,
+                    seconds = it.optInt("seconds", 0),
+                )
+            )
+        }
+        return AttractConfig(
+            enabled = o.optBoolean("enabled", false),
+            idleSeconds = o.optInt("idleSeconds", 60),
+            itemSeconds = o.optInt("itemSeconds", 8),
+            muteVideo = o.optBoolean("muteVideo", true),
+            items = items,
         )
     }
 

@@ -297,6 +297,25 @@
       </div>
     </div>
 
+    <!-- PUBBLICITÀ / ATTRACT -->
+    <div class="card">
+      <h2>10b · Pubblicità (schermo inattività)</h2>
+      <p class="hint">
+        Dalla schermata giochi, dopo i secondi di inattività indicati, il monitor mostra a tutto
+        schermo un loop di <b>immagini e/o video</b> finché qualcuno tocca lo schermo. Le immagini
+        si caricano qui; i <b>video</b> si indicano via <b>URL</b> (puoi ospitarli su GitHub o su un
+        tuo spazio esterno). ⚠ Video pesanti su GitHub consumano banda: usali brevi e compressi.
+      </p>
+      <label class="inline"><input type="checkbox" id="f-attractEnabled" /> Pubblicità attiva</label>
+      <div class="row">
+        <label class="field"><span>Parte dopo inattività (secondi)</span><input type="number" id="f-attractIdle" min="5" /></label>
+        <label class="field"><span>Durata di ogni immagine (secondi)</span><input type="number" id="f-attractItem" min="1" /></label>
+      </div>
+      <label class="inline"><input type="checkbox" id="f-attractMute" /> Video senza audio (consigliato)</label>
+      <div id="attract-list" style="margin-top:10px"></div>
+      <button class="ghost small" id="btn-add-attract">+ Aggiungi media</button>
+    </div>
+
     <!-- DISPOSITIVI -->
     <div class="card">
       <h2>11 · Ritocchi per questo monitor (dentro il cliente)</h2>
@@ -568,7 +587,13 @@ function renderAll(){
   $("f-updApkUrl").value = up.apkUrl || "";
   $("f-updSilent").checked = up.silentInstall !== false;
 
-  renderGames(); renderApps(); renderWifi(); renderDevices();
+  const at = obj(D,"attract");
+  $("f-attractEnabled").checked = !!at.enabled;
+  $("f-attractIdle").value = at.idleSeconds ?? 60;
+  $("f-attractItem").value = at.itemSeconds ?? 8;
+  $("f-attractMute").checked = at.muteVideo !== false;
+
+  renderGames(); renderApps(); renderWifi(); renderDevices(); renderAttract();
   refreshPreview();
 }
 
@@ -679,6 +704,30 @@ function renderWifi(){
     r.append(fSsid,fPass,fPrio); box.appendChild(r);
     box.__get=()=>({ ssid:fSsid.__input.value.trim(), password:fPass.__input.value||null,
       priority:Number(fPrio.__input.value)||0, hidden:!!w.hidden });
+    wrap.appendChild(box);
+  });
+}
+
+function renderAttract(){
+  const wrap=$("attract-list"); wrap.innerHTML="";
+  const at=obj(d(),"attract"); if(!Array.isArray(at.items)) at.items=[];
+  at.items.forEach((m,i)=>{
+    const box=document.createElement("div"); box.className="listitem";
+    box.appendChild(lineRemoveBtn(()=>{ at.items.splice(i,1); renderAttract(); refreshPreview(); }));
+    const r=document.createElement("div"); r.className="row";
+    const fType=document.createElement("label"); fType.className="field"; fType.innerHTML="<span>Tipo</span>";
+    const sel=document.createElement("select");
+    sel.innerHTML="<option value='image'>immagine</option><option value='video'>video</option>";
+    sel.value=(m.type==="video")?"video":"image"; fType.appendChild(sel); fType.__input=sel;
+    const fUrl=fieldInput("URL (immagine, oppure video .mp4)", m.url);
+    fUrl.appendChild(uploadButton(url=>{ fUrl.__input.value=url; refreshPreview(); }, "⬆ Carica immagine"));
+    const fSec=fieldInput("Durata immagine (s, 0=default)", m.seconds ?? 0, {type:"number"});
+    r.append(fType,fUrl,fSec); box.appendChild(r);
+    box.__get=()=>{
+      const o={ type:sel.value, url:fUrl.__input.value.trim() };
+      const s=Number(fSec.__input.value)||0; if(s>0) o.seconds=s;
+      return o;
+    };
     wrap.appendChild(box);
   });
 }
@@ -966,6 +1015,14 @@ function collectConfig(){
     silentInstall:$("f-updSilent").checked,
   });
 
+  D.attract = Object.assign(D.attract||{}, {
+    enabled:$("f-attractEnabled").checked,
+    idleSeconds:Number($("f-attractIdle").value)||60,
+    itemSeconds:Number($("f-attractItem").value)||8,
+    muteVideo:$("f-attractMute").checked,
+    items:[...$("attract-list").children].map(b=>b.__get()).filter(m=>m.url),
+  });
+
   D.games = [...$("games-list").children].map(b=>b.__get()).filter(g=>g.id);
   D.managedApps = [...$("apps-list").children].map(b=>b.__get()).filter(a=>a.packageName);
   D.network = D.network || {};
@@ -1039,6 +1096,7 @@ $("btn-save-fleet").onclick = saveFleet;
 $("btn-add-game").onclick = ()=>{ d().games.push({id:"",visible:true,order:(d().games.length+1)}); renderGames(); refreshPreview(); };
 $("btn-add-app").onclick = ()=>{ d().managedApps.push({packageName:"",action:"install",versionCode:0}); renderApps(); refreshPreview(); };
 $("btn-add-wifi").onclick = ()=>{ obj(d(),"network").wifiNetworks.push({ssid:"",password:"",priority:0,hidden:false}); renderWifi(); refreshPreview(); };
+$("btn-add-attract").onclick = ()=>{ const at=obj(d(),"attract"); if(!Array.isArray(at.items)) at.items=[]; at.items.push({type:"image",url:""}); renderAttract(); refreshPreview(); };
 $("btn-add-device").onclick = ()=>{ state.config.devices["NUOVO-DEVICE-ID-"+Date.now()]={label:""}; renderDevices(); refreshPreview(); };
 $("btn-refresh-preview").onclick = refreshPreview;
 $("btn-save").onclick = saveConfig;
