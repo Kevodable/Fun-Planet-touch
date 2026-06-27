@@ -57,6 +57,9 @@ class MainActivity : ComponentActivity() {
     private val resumeTick = mutableStateOf(0)
     // Bumped on every touch/key the launcher receives; drives the idle-timeout reset.
     private val interactionTick = mutableStateOf(0L)
+    // True solo quando il launcher è in primo piano: evita di lanciare l'attract
+    // mentre un gioco è davanti (il launcher è in pausa dietro di esso).
+    private val isForeground = mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +76,7 @@ class MainActivity : ComponentActivity() {
                 prefs = prefs,
                 resumeTick = resumeTick.value,
                 interactionTick = interactionTick.value,
+                isForeground = isForeground.value,
             )
         }
     }
@@ -89,8 +93,14 @@ class MainActivity : ComponentActivity() {
         // Back on the grid: the floating "back to games" button and the session timer are done.
         FloatingHomeButton.hide(this)
         SessionTimer.cancel()
+        isForeground.value = true
         resumeTick.value++
         interactionTick.value = android.os.SystemClock.elapsedRealtime()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isForeground.value = false
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -109,7 +119,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalComposeUiApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: Long) {
+private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: Long, isForeground: Boolean) {
     val context = LocalContext.current
     val fleetApp = context.applicationContext as FleetApp
     val config by fleetApp.configRepository.config.collectAsState()
@@ -199,6 +209,19 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
         if (idleTimeoutSeconds > 0 && screen != Screen.HOME) {
             kotlinx.coroutines.delay(idleTimeoutSeconds * 1000L)
             screen = Screen.HOME
+        }
+    }
+
+    // Schermo pubblicitario / attract: dalla home, dopo `idleSeconds` di inattività e solo
+    // se il launcher è in primo piano (nessun gioco davanti), parte il loop dei media.
+    val attract = config?.attract
+    val attractIdle = attract?.idleSeconds ?: 0
+    LaunchedEffect(attract?.enabled, attractIdle, attract?.items?.size, screen, interactionTick, isForeground) {
+        if (attract?.enabled == true && attract.items.isNotEmpty() && attractIdle > 0 &&
+            screen == Screen.HOME && isForeground
+        ) {
+            kotlinx.coroutines.delay(attractIdle * 1000L)
+            AttractActivity.launch(context)
         }
     }
 
