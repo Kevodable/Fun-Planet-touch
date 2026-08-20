@@ -20,7 +20,20 @@ web su GitHub Pages, gestiti da remoto via `launcher/config.json` e dal pannello
    dell'OTA (`launcher-latest.apk`) sulla chiave di release. Gli APK di *debug*
    (SHA-256 `c23a3cc0…`) restano solo per i 2 tablet di test.
 
-2. **Branding per-locale + caricamento immagini nell'admin.**
+2. **Cutover OTA alla v11 di release (IN SOSPESO — ricordarlo a Kevin).**
+   La v11 (blindatura offline: content-pack giochi + cache immagini/video) è già
+   compilata e **firmata release** (`e12c01bb…`) in
+   `launcher/apk/launcher-release-v11.apk`. I 2 tablet di test vanno reinstallati
+   via cavo con questo APK (non-DO: `adb uninstall`+`adb install`; Device Owner:
+   factory reset + `dpm set-device-owner it.bigbenmatic.gamelauncher/.DeviceOwnerReceiver`).
+   **Quando Kevin conferma che i tablet sono su release v11**, PROMUOVERE a OTA:
+   copiare `launcher-release-v11.apk` → `launcher/apk/launcher-latest.apk` e portare
+   `config.defaults.update.latestVersionCode` a **11**, poi pubblicare. Da lì gli OTA
+   futuri viaggiano sulla chiave di release. NB: `content-pack v1` e il config
+   (`defaults.content`, `defaults.attract`) sono **già pubblicati ma dormienti**
+   finché i tablet non passano alla v11.
+
+3. **Branding per-locale + caricamento immagini nell'admin.**
    Implementare in `launcher/admin.html`: (a) **upload immagini** via API GitHub
    (stesso token) per ospitare logo/sfondo del locale, (b) un blocco comodo
    **"Branding del locale"** (logo + nome + colori + sfondo) da assegnare per
