@@ -4,6 +4,8 @@
 *.idsig
 # Eccezione: l'APK pubblicato per l'aggiornamento OTA del launcher (servito da GitHub Pages)
 !launcher/apk/launcher-latest.apk
+# Eccezione: APK di release conservati per la distribuzione via cavo (firma definitiva)
+!launcher/apk/launcher-release-v*.apk
 
 # macOS
 .DS_Store
