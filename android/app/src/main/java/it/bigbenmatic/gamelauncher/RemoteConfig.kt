@@ -85,6 +85,14 @@ data class TelemetryConfig(
     val sendDeviceHealth: Boolean = true,
 )
 
+/** Content-pack dei giochi (offline-first): uno zip versionato scaricato una volta e
+ *  scompattato su disco. `baseUrl` è la cartella remota che corrisponde alla radice del pack. */
+data class ContentConfig(
+    val version: Int = 0,
+    val url: String? = null,
+    val baseUrl: String? = null,
+)
+
 /** Un elemento del loop pubblicitario / attract: un'immagine o un video (per URL). */
 data class AttractItem(
     val type: String,    // "image" | "video"
@@ -117,6 +125,7 @@ data class ResolvedConfig(
     val telemetry: TelemetryConfig,
     val wifiNetworks: List<WifiNetwork>,
     val attract: AttractConfig,
+    val content: ContentConfig,
 )
 
 /** Parses the fleet config.json and resolves the effective settings for [deviceId],
@@ -156,6 +165,9 @@ object RemoteConfigParser {
         val attract = parseAttract(
             mergeObjects(defaults.optJSONObject("attract"), deviceOverride?.optJSONObject("attract"))
         )
+        val content = parseContent(
+            mergeObjects(defaults.optJSONObject("content"), deviceOverride?.optJSONObject("content"))
+        )
 
         return ResolvedConfig(
             schemaVersion = root.optInt("schemaVersion", 1),
@@ -172,8 +184,15 @@ object RemoteConfigParser {
             telemetry = telemetry,
             wifiNetworks = wifiNetworks,
             attract = attract,
+            content = content,
         )
     }
+
+    private fun parseContent(o: JSONObject): ContentConfig = ContentConfig(
+        version = o.optInt("version", 0),
+        url = o.optStringOrNull("url"),
+        baseUrl = o.optStringOrNull("baseUrl"),
+    )
 
     private fun parseAttract(o: JSONObject): AttractConfig {
         val arr = o.optJSONArray("items")

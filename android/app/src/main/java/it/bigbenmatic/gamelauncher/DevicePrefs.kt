@@ -20,6 +20,13 @@ class DevicePrefs(context: Context) {
         prefs.edit().putInt(KEY_CONFIG_VERSION, version).apply()
     }
 
+    /** Versione del content-pack (giochi+asset) attualmente scompattato su disco. -1 = nessuno. */
+    fun getContentVersion(): Int = prefs.getInt(KEY_CONTENT_VERSION, -1)
+
+    fun setContentVersion(version: Int) {
+        prefs.edit().putInt(KEY_CONTENT_VERSION, version).apply()
+    }
+
     /** Last manifest URL the router resolved for this device (multi-tenant). Cached so the
      * device can keep loading its own client's manifest even if the router is briefly
      * unreachable. Null until the first successful router resolution. */
@@ -79,6 +86,7 @@ class DevicePrefs(context: Context) {
         const val DEFAULT_CLIENT_ID = "bigbenmatic"
         private const val KEY_CONFIG_JSON = "cached_config_json"
         private const val KEY_CONFIG_VERSION = "cached_config_version"
+        private const val KEY_CONTENT_VERSION = "content_pack_version"
         private const val KEY_MANIFEST_URL = "resolved_manifest_url"
         private const val KEY_CLIENT_ID = "resolved_client_id"
         private const val KEY_LOCATION_ID = "resolved_location_id"
