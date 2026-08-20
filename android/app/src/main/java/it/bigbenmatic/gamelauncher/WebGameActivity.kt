@@ -49,6 +49,12 @@ class WebGameActivity : ComponentActivity() {
                 loadWithOverviewMode = true
                 useWideViewPort = true
                 cacheMode = WebSettings.LOAD_DEFAULT
+                // Content-pack offline: i giochi possono essere caricati da file:// e devono poter
+                // leggere i propri asset relativi (script/immagini/json) dalla stessa cartella.
+                allowFileAccess = true
+                allowContentAccess = true
+                @Suppress("DEPRECATION")
+                allowFileAccessFromFileURLs = true
                 builtInZoomControls = false
                 displayZoomControls = false
                 setSupportZoom(false)

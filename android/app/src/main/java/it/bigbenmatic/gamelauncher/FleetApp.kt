@@ -26,6 +26,8 @@ class FleetApp : Application() {
         configRepository = ConfigRepository(this)
         telemetryManager = TelemetryManager(this)
         devicePrefs = DevicePrefs(this)
+        // Abilita la cache su disco delle immagini (branding/icone/pubblicità) per l'offline.
+        RemoteImageLoader.init(this)
 
         // Apply Wi-Fi straight away (lifeline + whatever the cached config carries) so the
         // device can reach the network before the first poll completes.
@@ -97,8 +99,26 @@ class FleetApp : Application() {
                 // forzare riconnessioni quando è già connesso, che causavano i distacchi.
                 if (!online) runCatching { applyWifi() }
                 runCatching { applyManagedApps() }
+                // Blindatura offline: quando c'è rete, scarica una volta il content-pack dei
+                // giochi e i media della pubblicità, così restano disponibili anche senza rete.
+                if (online) configRepository.config.value?.let { cfg ->
+                    runCatching { ContentPackManager.sync(this@FleetApp, cfg.content) }
+                    runCatching { prefetchAttract(cfg.attract) }
+                }
                 val minutes = configRepository.config.value?.pollIntervalMinutes?.takeIf { it > 0 } ?: 15
                 delay(if (online) minutes * 60_000L else 20_000L)
+            }
+        }
+    }
+
+    /** Pre-scarica i media della pubblicità così l'attract funziona anche offline. */
+    private suspend fun prefetchAttract(attract: AttractConfig) {
+        if (!attract.enabled) return
+        for (item in attract.items) {
+            if (item.type.equals("video", ignoreCase = true)) {
+                MediaCache.ensure(this, item.url)
+            } else {
+                RemoteImageLoader.load(item.url) // popola la cache immagini su disco
             }
         }
     }

@@ -246,7 +246,11 @@ private fun LauncherApp(prefs: PrefsManager, resumeTick: Int, interactionTick: L
                         fleetApp.telemetryManager.recordGameLaunch(game.packageName)
                         // Giochi web → WebView interna; giochi nativi → lancio del package.
                         val launched = if (game.url != null) {
-                            WebGameActivity.launch(context, game.url); true
+                            // Offline-first: se il content-pack locale contiene il gioco, lo carica
+                            // da file:// (funziona senza rete); altrimenti ripiega sull'URL remoto.
+                            val gameUrl = ContentPackManager.localUrlFor(context, game.url, config?.content)
+                                ?: game.url
+                            WebGameActivity.launch(context, gameUrl); true
                         } else {
                             InstalledAppsRepository.launch(context, game.packageName)
                         }

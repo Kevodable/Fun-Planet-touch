@@ -102,8 +102,15 @@ class AttractActivity : ComponentActivity() {
     private fun showVideo(item: AttractItem) {
         image.visibility = View.GONE
         video.visibility = View.VISIBLE
+        // Offline-first: se il video è già in cache su disco lo riproduciamo da lì; altrimenti lo
+        // streammiamo dall'URL e lo scarichiamo in background per la prossima volta.
+        val cached = MediaCache.cachedFile(this, item.url)
+        val uri = if (cached != null) Uri.fromFile(cached) else Uri.parse(item.url)
+        if (cached == null) lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching { MediaCache.ensure(this@AttractActivity, item.url) }
+        }
         runCatching {
-            video.setVideoURI(Uri.parse(item.url))
+            video.setVideoURI(uri)
             video.setOnPreparedListener { mp ->
                 failures = 0
                 if (muteVideo) mp.setVolume(0f, 0f)
