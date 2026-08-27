@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 44,
-  "updatedAt": "2026-08-20T12:00:00.000Z",
+  "configVersion": 45,
+  "updatedAt": "2026-08-27T17:30:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -181,8 +181,8 @@
       "items": []
     },
     "content": {
-      "version": 1,
-      "url": "https://kevodable.github.io/Fun-Planet-touch/launcher/content/content-1.zip",
+      "version": 2,
+      "url": "https://kevodable.github.io/Fun-Planet-touch/launcher/content/content-2.zip",
       "baseUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/"
     }
   },
