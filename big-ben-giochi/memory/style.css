@@ -475,4 +475,11 @@ select {
   .win-card {
     padding: 18px 22px;
   }
+
+  /* Chrome 66 non supporta aspect-ratio: rendo la board un quadrato guidato dall'altezza
+     con righe esplicite, così le carte restano quadrate e stanno nello schermo. */
+  @supports not (aspect-ratio: 1 / 1) {
+    .board { width: 84vh; height: 84vh; grid-template-rows: repeat(4, 1fr); }
+    .board.large { grid-template-rows: repeat(6, 1fr); }
+  }
 }
