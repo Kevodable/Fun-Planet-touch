@@ -82,6 +82,25 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
   gap:16px;
   padding:14px 18px;
 }
+/* Pulsante "Torna ai giochi": sempre visibile nell'header di ogni gioco. */
+.bb-back{
+  flex:0 0 auto;
+  background:var(--bb-burgundy, #7A1F3D);
+  color:#fff;
+  border:0;
+  border-radius:24px;
+  padding:10px 16px;
+  font-family:inherit;
+  font-weight:800;
+  font-size:2.4vmin; font-size:clamp(13px,2.4vmin,18px);
+  line-height:1;
+  white-space:nowrap;
+  cursor:pointer;
+  box-shadow:var(--bb-shadow);
+  touch-action:manipulation;
+}
+.bb-back:active{ transform:scale(.95); }
+
 .bb-header__title{
   font-size:4.5vmin; font-size:clamp(20px,4.5vmin,34px);
   font-weight:800;
