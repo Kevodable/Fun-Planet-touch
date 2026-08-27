@@ -25,9 +25,9 @@
       padding:22px 18px 10px;
       text-align:center;
     }
-    .gallery__logo{ height:clamp(80px,18vmin,160px); width:auto; display:block; }
+    .gallery__logo{ height:18vmin; height:clamp(80px,18vmin,160px); width:auto; display:block; }
     .gallery__title{
-      font-size:clamp(24px,6vmin,44px);
+      font-size:6vmin; font-size:clamp(24px,6vmin,44px);
       font-weight:900;
       color:var(--bb-burgundy);
       letter-spacing:.5px;
@@ -35,7 +35,7 @@
     .gallery__subtitle{
       flex:0 0 auto;
       text-align:center;
-      font-size:clamp(13px,2.6vmin,18px);
+      font-size:2.6vmin; font-size:clamp(13px,2.6vmin,18px);
       font-weight:700;
       color:var(--bb-pink);
       margin-bottom:8px;
@@ -45,11 +45,11 @@
       flex:1 1 auto;
       min-height:0;
       display:grid;
-      gap:clamp(14px,3vmin,28px);
+      gap:3vmin; gap:clamp(14px,3vmin,28px);
       grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
       align-content:center;
       justify-content:center;
-      padding:clamp(14px,3vmin,32px);
+      padding:3vmin; padding:clamp(14px,3vmin,32px);
       overflow:hidden;
     }
     /* Una tile = grande target tap, colorata, con icona enorme */
@@ -59,7 +59,7 @@
       align-items:center;
       justify-content:center;
       gap:10px;
-      min-height:clamp(150px,28vmin,240px);
+      min-height:28vmin; min-height:clamp(150px,28vmin,240px);
       padding:18px;
       border-radius:var(--bb-radius-lg);
       color:#fff;
@@ -68,13 +68,13 @@
       text-align:center;
     }
     .tile:active{ transform:scale(.94); }
-    .tile__icon{ font-size:clamp(48px,12vmin,92px); line-height:1; }
+    .tile__icon{ font-size:12vmin; font-size:clamp(48px,12vmin,92px); line-height:1; }
     /* Icona-mascotte (immagine) al posto dell'emoji */
-    .tile__img{ height:clamp(72px,18vmin,128px); width:auto; display:block;
+    .tile__img{ height:18vmin; height:clamp(72px,18vmin,128px); width:auto; display:block;
       filter:drop-shadow(0 6px 10px rgba(0,0,0,.18)); }
-    .tile__name{ font-size:clamp(18px,3.6vmin,28px); font-weight:900; }
+    .tile__name{ font-size:3.6vmin; font-size:clamp(18px,3.6vmin,28px); font-weight:900; }
     .tile__desc{
-      font-size:clamp(12px,2.4vmin,17px);
+      font-size:2.4vmin; font-size:clamp(12px,2.4vmin,17px);
       font-weight:600;
       opacity:.92;
       max-width:90%;

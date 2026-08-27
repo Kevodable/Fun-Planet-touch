@@ -83,7 +83,7 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
   padding:14px 18px;
 }
 .bb-header__title{
-  font-size:34px; font-size:clamp(20px,4.5vmin,34px);
+  font-size:4.5vmin; font-size:clamp(20px,4.5vmin,34px);
   font-weight:800;
   letter-spacing:.5px;
   color:var(--bb-burgundy);
@@ -100,7 +100,7 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
   display:flex;
   align-items:center;
   gap:14px;
-  font-size:24px; font-size:clamp(16px,3vmin,24px);
+  font-size:3vmin; font-size:clamp(16px,3vmin,24px);
   font-weight:800;
   color:var(--bb-blue);
 }
@@ -117,7 +117,7 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
   border-radius:999px;
   background:var(--bb-pink);
   color:#fff;
-  font-size:24px; font-size:clamp(18px,3.4vmin,24px);
+  font-size:3.4vmin; font-size:clamp(18px,3.4vmin,24px);
   font-weight:800;
   box-shadow:var(--bb-shadow);
   transition:transform .12s var(--bb-ease-elastic), filter .12s ease;
@@ -163,7 +163,7 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
 }
 .bb-overlay[hidden]{ display:none; }
 .bb-overlay__card{
-  width:520px; width:min(92vw,520px);
+  width:92vw; width:min(92vw,520px);
   text-align:center;
   padding:34px 28px;
   background:var(--bb-paper);
@@ -171,10 +171,10 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
   box-shadow:var(--bb-shadow-strong);
   animation:bb-pop .4s var(--bb-ease-elastic) both;
 }
-.bb-overlay__emoji{ font-size:110px; font-size:clamp(56px,16vmin,110px); line-height:1; }
+.bb-overlay__emoji{ font-size:16vmin; font-size:clamp(56px,16vmin,110px); line-height:1; }
 /* Mascotte nell'overlay vittoria: entra con un rimbalzo allegro */
 .bb-overlay__mascotte{
-  width:190px; width:clamp(120px,30vmin,190px);
+  width:30vmin; width:clamp(120px,30vmin,190px);
   height:auto;
   display:block;
   margin:0 auto;
@@ -182,12 +182,12 @@ button{ font-family:inherit; color:inherit; border:none; background:none; cursor
 }
 .bb-overlay__title{
   margin:10px 0 6px;
-  font-size:42px; font-size:clamp(26px,6vmin,42px);
+  font-size:6vmin; font-size:clamp(26px,6vmin,42px);
   font-weight:900;
   color:var(--bb-burgundy);
 }
 .bb-overlay__score{
-  font-size:26px; font-size:clamp(18px,4vmin,26px);
+  font-size:4vmin; font-size:clamp(18px,4vmin,26px);
   font-weight:700;
   color:var(--bb-blue);
 }

@@ -11,7 +11,7 @@
     .bb-stage{ padding:8px 14px 16px; }
     .arena{
       position:relative;
-      width:min(86vmin, 560px);
+      width:86vmin; width:min(86vmin, 560px);
       aspect-ratio:1/1;
       border-radius:22px;
       background:#fff;
@@ -20,13 +20,14 @@
     }
     .arena canvas{ display:block; width:100%; height:100%; }
 
-    .start{ position:absolute; inset:0; z-index:30; display:flex; flex-direction:column;
+    .start{ position:absolute; top:0; right:0; bottom:0; left:0; inset:0; z-index:30; display:flex; flex-direction:column;
       align-items:center; justify-content:center; gap:20px;
       background:rgba(255,247,251,.95); text-align:center; padding:18px; }
-    .start__img{ width:clamp(110px,24vmin,180px); height:auto;
+    .start__img{ width:24vmin; width:clamp(110px,24vmin,180px); height:auto;
       filter:drop-shadow(0 8px 14px rgba(0,0,0,.2)); }
-    .start__txt{ font-size:clamp(18px,4.4vmin,30px); font-weight:900; color:var(--bb-burgundy); line-height:1.3; }
+    .start__txt{ font-size:4.4vmin; font-size:clamp(18px,4.4vmin,30px); font-weight:900; color:var(--bb-burgundy); line-height:1.3; }
     .liv-row{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+    @supports not (aspect-ratio: 1 / 1){ .arena{ height:86vmin; } }
   </style>
 </head>
 <body>
