@@ -15,6 +15,13 @@ import android.os.Build
  */
 object KioskManager {
 
+    /** Finestra di "manutenzione": mentre è attiva, il kiosk NON si ri-aggancia da solo
+     *  (così l'operatore può uscire davvero e usare il sistema). Vedi release()/engage(). */
+    @Volatile private var maintenanceUntilMs = 0L
+    private const val MAINTENANCE_MS = 5 * 60 * 1000L   // 5 minuti
+
+    fun inMaintenance(): Boolean = android.os.SystemClock.elapsedRealtime() < maintenanceUntilMs
+
     fun adminComponent(context: Context) = ComponentName(context, DeviceOwnerReceiver::class.java)
 
     fun isDeviceOwner(context: Context): Boolean {
@@ -58,17 +65,38 @@ object KioskManager {
         }
     }
 
-    /** Engages kiosk pinning if this app is Device Owner. Safe to call repeatedly. */
+    /** Engages kiosk pinning if this app is Device Owner. Safe to call repeatedly.
+     *  Durante la finestra di manutenzione non fa nulla, così l'uscita temporanea regge. */
     fun engage(activity: Activity) {
         if (!isDeviceOwner(activity)) return
+        if (inMaintenance()) return
         val am = activity.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
         if (am.lockTaskModeState == android.app.ActivityManager.LOCK_TASK_MODE_NONE) {
             runCatching { activity.startLockTask() }
         }
     }
 
-    /** Lets a parent temporarily leave kiosk mode (e.g. to reach Android Settings for maintenance). */
+    /**
+     * Uscita temporanea dal kiosk per manutenzione. Apre una finestra di 5 minuti in cui il
+     * kiosk non si ri-aggancia, sblocca il pinning e porta l'operatore nelle Impostazioni
+     * Android (uscita reale dall'app). Rientrando nel launcher entro la finestra NON si
+     * ri-blocca; dopo 5 minuti (o al riavvio) il kiosk si riattiva da solo.
+     */
     fun release(activity: Activity) {
+        maintenanceUntilMs = android.os.SystemClock.elapsedRealtime() + MAINTENANCE_MS
         runCatching { activity.stopLockTask() }
+        // Prima esci dal lock task, poi apri le Impostazioni (fuori dalla allow-list).
+        runCatching {
+            activity.startActivity(
+                android.content.Intent(android.provider.Settings.ACTION_SETTINGS)
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
+    }
+
+    /** Rientra subito in kiosk (annulla la finestra di manutenzione) e riaggancia il pinning. */
+    fun resume(activity: Activity) {
+        maintenanceUntilMs = 0L
+        engage(activity)
     }
 }

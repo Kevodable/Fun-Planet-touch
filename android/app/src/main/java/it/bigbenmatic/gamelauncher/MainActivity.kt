@@ -610,7 +610,17 @@ private fun SettingsScreen(
                     Spacer(Modifier.height(8.dp))
                     OutlinedButton(onClick = {
                         (context as? android.app.Activity)?.let { KioskManager.release(it) }
-                    }) { Text("Sblocca temporaneamente") }
+                    }) { Text("Esci temporaneamente (Impostazioni)") }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "Apre le Impostazioni Android per la manutenzione. Per ~5 minuti " +
+                            "il kiosk non si riattiva (poi torna da solo). Rientra subito col pulsante qui sotto.",
+                        fontSize = 11.sp,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedButton(onClick = {
+                        (context as? android.app.Activity)?.let { KioskManager.resume(it) }
+                    }) { Text("Rientra in kiosk ora") }
                 }
             }
         }
