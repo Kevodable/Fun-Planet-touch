@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "configVersion": 3,
-  "updatedAt": "2026-08-27T10:54:41.910Z",
+  "configVersion": 4,
+  "updatedAt": "2026-08-27T11:03:22.293Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
       "appTitle": "Giochi per i piccoli ospiti",
       "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image0-photoroom-1787828074787.png",
-      "backgroundUrl": null,
+      "backgroundUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/progetto-senza-titolo-1-1787828305000.png",
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
       "language": "it"
@@ -162,6 +162,8 @@
     }
   },
   "devices": {
-    "NUOVO-DEVICE-ID-1787827552960": {}
+    "176fe05d-1fa0-4432-bbed-988611332a57": {
+      "label": "Monitor 1"
+    }
   }
 }
