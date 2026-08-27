@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 1,
-  "updatedAt": "2026-08-27T10:40:26.462Z",
+  "configVersion": 2,
+  "updatedAt": "2026-08-27T10:46:04.652Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -152,7 +152,16 @@
       "heartbeatIntervalMinutes": 5,
       "sendGameUsage": true,
       "sendDeviceHealth": true
+    },
+    "attract": {
+      "items": [],
+      "enabled": false,
+      "idleSeconds": 60,
+      "itemSeconds": 8,
+      "muteVideo": true
     }
   },
-  "devices": {}
+  "devices": {
+    "NUOVO-DEVICE-ID-1787827552960": {}
+  }
 }
