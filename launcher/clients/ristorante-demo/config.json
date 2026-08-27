@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "configVersion": 1,
+  "configVersion": 2,
   "updatedAt": "2026-06-24T10:00:00.000Z",
   "pollIntervalMinutes": 3,
   "_nota": "Manifest del cliente 'ristorante-demo'. Stesso schema dell'attuale launcher/config.json: defaults + devices[UUID]. Per abilitare/disabilitare un gioco usa 'visible'. Branding e palette sono indipendenti da Big Ben.",
@@ -30,7 +30,11 @@
     "operational": {
       "status": "active",
       "maintenanceMessage": "Torniamo subito!",
-      "banner": { "enabled": false, "text": "", "imageUrl": "" }
+      "banner": {
+        "enabled": false,
+        "text": "",
+        "imageUrl": ""
+      }
     },
     "games": [
       {
@@ -112,6 +116,36 @@
         "order": 17,
         "visible": false,
         "sessionLimitSeconds": 0
+      },
+      {
+        "id": "puzzle",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/puzzle/index.html",
+        "displayName": "Rompicapo",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/puzzle.png",
+        "category": "Giochi web",
+        "order": 18,
+        "visible": true,
+        "sessionLimitSeconds": 0
+      },
+      {
+        "id": "tris",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/tris/index.html",
+        "displayName": "Tris",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/tris.png",
+        "category": "Giochi web",
+        "order": 19,
+        "visible": true,
+        "sessionLimitSeconds": 0
+      },
+      {
+        "id": "hanoi",
+        "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/hanoi/index.html",
+        "displayName": "Torre di Hanoi",
+        "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/hanoi.png",
+        "category": "Giochi web",
+        "order": 20,
+        "visible": true,
+        "sessionLimitSeconds": 0
       }
     ],
     "network": {
@@ -130,6 +164,11 @@
       "heartbeatIntervalMinutes": 5,
       "sendGameUsage": true,
       "sendDeviceHealth": true
+    },
+    "content": {
+      "version": 6,
+      "url": "https://kevodable.github.io/Fun-Planet-touch/launcher/content/content-6.zip",
+      "baseUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/"
     }
   },
   "devices": {}
