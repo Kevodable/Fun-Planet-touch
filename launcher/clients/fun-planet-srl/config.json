@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "configVersion": 2,
-  "updatedAt": "2026-08-27T10:46:04.652Z",
+  "configVersion": 3,
+  "updatedAt": "2026-08-27T10:54:41.910Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
       "appTitle": "Giochi per i piccoli ospiti",
-      "logoUrl": null,
+      "logoUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image0-photoroom-1787828074787.png",
       "backgroundUrl": null,
       "primaryColor": "#3346D6",
       "accentColor": "#FDCE72",
