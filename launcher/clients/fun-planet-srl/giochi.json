@@ -61,5 +61,26 @@
     "cartella": "forme",
     "attivo": true,
     "iconImg": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/forme.png"
+  },
+  {
+    "id": "puzzle",
+    "nome": "Rompicapo",
+    "cartella": "puzzle",
+    "attivo": true,
+    "iconImg": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/puzzle.png"
+  },
+  {
+    "id": "tris",
+    "nome": "Tris",
+    "cartella": "tris",
+    "attivo": true,
+    "iconImg": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/tris.png"
+  },
+  {
+    "id": "hanoi",
+    "nome": "Torre di Hanoi",
+    "cartella": "hanoi",
+    "attivo": true,
+    "iconImg": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/hanoi.png"
   }
 ]
