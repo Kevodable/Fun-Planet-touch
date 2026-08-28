@@ -1,233 +1,154 @@
-const MASCOTS = [
-  { type: 'img', value: 'assets/mascots/cards/kip.jpg', alt: 'Kip' },
-  { type: 'img', value: 'assets/mascots/cards/stella.jpg', alt: 'Stella' },
-  { type: 'img', value: 'assets/mascots/cards/bolt.jpg', alt: 'Bolt' },
-  { type: 'img', value: 'assets/mascots/cards/bobo.jpg', alt: 'Bobo' },
+/* Memory — Kids Fun Planet
+   Riscritto sul framework condiviso BB (come gli altri giochi):
+   header con "Torna ai giochi", schermata di start per la difficoltà,
+   overlay di vittoria BB.win, suoni BB.sound. Mantiene solo il logo/banner. */
+
+BB.lockScroll();
+var info = BB.header("🎉 Memory");
+BB.idle(60000, BB.home);
+
+var board = document.getElementById("board");
+var startScreen = document.getElementById("start");
+
+var MASCOTS = [
+  { type: "img", value: "assets/mascots/cards/kip.jpg", alt: "Kip" },
+  { type: "img", value: "assets/mascots/cards/stella.jpg", alt: "Stella" },
+  { type: "img", value: "assets/mascots/cards/bolt.jpg", alt: "Bolt" },
+  { type: "img", value: "assets/mascots/cards/bobo.jpg", alt: "Bobo" }
 ];
+var EMOJIS = ["🚀","🌈","🪐","🌟","🛸","🎈","🦄","🍭","🎪","🌻","🐬","🍩","🎨","🐙","🍉","🎠"];
+var CARD_VALUES = MASCOTS.concat(EMOJIS.map(function (e) {
+  return { type: "emoji", value: e, alt: e };
+}));
 
-const EMOJIS = ['🚀', '🌈', '🪐', '🌟', '🛸', '🎈', '🦄', '🍭', '🎪', '🌻', '🐬', '🍩', '🎨', '🐙', '🍉', '🎠'];
+var flipped = [];
+var matchedCount = 0;
+var totalPairs = 8;
+var moves = 0;
+var seconds = 0;
+var timer = null;
+var lockBoard = false;
 
-const CARD_VALUES = [
-  ...MASCOTS,
-  ...EMOJIS.map((e) => ({ type: 'emoji', value: e, alt: e })),
-];
-
-const board = document.getElementById('board');
-const movesEl = document.getElementById('moves');
-const timerEl = document.getElementById('timer');
-const pairsEl = document.getElementById('pairs');
-const restartBtn = document.getElementById('restart-btn');
-const playAgainBtn = document.getElementById('play-again-btn');
-const difficultySelect = document.getElementById('difficulty');
-const winOverlay = document.getElementById('win-overlay');
-const finalMovesEl = document.getElementById('final-moves');
-const finalTimeEl = document.getElementById('final-time');
-const confettiLayer = document.getElementById('confetti-layer');
-
-let flippedCards = [];
-let matchedCount = 0;
-let totalPairs = 8;
-let moves = 0;
-let timerInterval = null;
-let secondsElapsed = 0;
-let lockBoard = false;
-
-let audioCtx = null;
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
+function fmt(t) {
+  var m = String(Math.floor(t / 60));
+  var s = String(t % 60);
+  if (m.length < 2) m = "0" + m;
+  if (s.length < 2) s = "0" + s;
+  return m + ":" + s;
 }
 
-function playTone(freq, duration = 0.15, type = 'sine', delay = 0) {
-  const ctx = getAudioCtx();
-  const oscillator = ctx.createOscillator();
-  const gain = ctx.createGain();
-  oscillator.type = type;
-  oscillator.frequency.value = freq;
-  oscillator.connect(gain);
-  gain.connect(ctx.destination);
-  const startTime = ctx.currentTime + delay;
-  gain.gain.setValueAtTime(0.15, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-  oscillator.start(startTime);
-  oscillator.stop(startTime + duration);
-}
-
-function playFlipSound() {
-  playTone(520, 0.08, 'triangle');
-}
-
-function playMatchSound() {
-  playTone(660, 0.12, 'sine');
-  playTone(880, 0.15, 'sine', 0.1);
-}
-
-function playMismatchSound() {
-  playTone(180, 0.2, 'sawtooth');
-}
-
-function playWinFanfare() {
-  [523, 659, 784, 1047].forEach((freq, i) => playTone(freq, 0.25, 'triangle', i * 0.15));
-}
-
-function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function formatTime(totalSeconds) {
-  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-  return `${minutes}:${seconds}`;
+function renderStats() {
+  info.innerHTML =
+    '<span class="mem-stats">' +
+      '<span class="mem-stat">🕹️ <b>' + moves + '</b></span>' +
+      '<span class="mem-stat">⏱️ <b>' + fmt(seconds) + '</b></span>' +
+      '<span class="mem-stat">💎 <b>' + matchedCount + "/" + totalPairs + "</b></span>" +
+    "</span>";
 }
 
 function startTimer() {
   stopTimer();
-  secondsElapsed = 0;
-  timerEl.textContent = formatTime(0);
-  timerInterval = setInterval(() => {
-    secondsElapsed++;
-    timerEl.textContent = formatTime(secondsElapsed);
-  }, 1000);
+  seconds = 0;
+  renderStats();
+  timer = setInterval(function () { seconds++; renderStats(); }, 1000);
 }
-
 function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
+  if (timer) clearInterval(timer);
+  timer = null;
 }
 
-function renderCardBackContent(card) {
-  if (card.type === 'img') {
-    return `<img src="${card.value}" alt="${card.alt}">`;
+function faceContent(card) {
+  if (card.type === "img") {
+    return '<img src="' + card.value + '" alt="' + card.alt + '">';
   }
   return card.value;
 }
 
-function createCard(card, index) {
-  const el = document.createElement('div');
-  el.className = 'card';
-  el.dataset.key = card.alt + '|' + card.value;
-  el.dataset.index = index;
-
-  el.innerHTML = `
-    <div class="card-inner">
-      <div class="card-face card-front"></div>
-      <div class="card-face card-back">${renderCardBackContent(card)}</div>
-    </div>
-  `;
-
-  el.addEventListener('click', () => onCardClick(el));
+function makeCard(card) {
+  var el = document.createElement("div");
+  el.className = "card";
+  el.dataset.key = card.alt + "|" + card.value;
+  el.innerHTML =
+    '<div class="card-inner">' +
+      '<div class="card-face card-front"></div>' +
+      '<div class="card-face card-back">' + faceContent(card) + "</div>" +
+    "</div>";
+  el.addEventListener("click", function () { onCardClick(el); });
   return el;
 }
 
-function onCardClick(card) {
+function onCardClick(el) {
   if (lockBoard) return;
-  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
-  if (flippedCards.length === 2) return;
+  if (el.classList.contains("flipped") || el.classList.contains("matched")) return;
+  if (flipped.length === 2) return;
 
-  card.classList.add('flipped');
-  playFlipSound();
-  flippedCards.push(card);
+  el.classList.add("flipped");
+  BB.sound("pop");
+  flipped.push(el);
 
-  if (flippedCards.length === 2) {
+  if (flipped.length === 2) {
     moves++;
-    movesEl.textContent = moves;
+    renderStats();
     checkMatch();
   }
 }
 
 function checkMatch() {
-  const [first, second] = flippedCards;
-  const isMatch = first.dataset.key === second.dataset.key;
-
-  if (isMatch) {
-    first.classList.add('matched');
-    second.classList.add('matched');
-    flippedCards = [];
+  var first = flipped[0], second = flipped[1];
+  if (first.dataset.key === second.dataset.key) {
+    first.classList.add("matched");
+    second.classList.add("matched");
+    flipped = [];
     matchedCount++;
-    pairsEl.textContent = `${matchedCount}/${totalPairs}`;
-    playMatchSound();
-
+    renderStats();
+    BB.sound("match");
     if (matchedCount === totalPairs) {
       stopTimer();
-      setTimeout(showWin, 500);
+      setTimeout(fine, 600);
     }
   } else {
     lockBoard = true;
-    playMismatchSound();
-    first.classList.add('mismatch');
-    second.classList.add('mismatch');
-    setTimeout(() => {
-      first.classList.remove('flipped', 'mismatch');
-      second.classList.remove('flipped', 'mismatch');
-      flippedCards = [];
+    BB.sound("error");
+    first.classList.add("mismatch");
+    second.classList.add("mismatch");
+    setTimeout(function () {
+      first.classList.remove("flipped", "mismatch");
+      second.classList.remove("flipped", "mismatch");
+      flipped = [];
       lockBoard = false;
     }, 800);
   }
 }
 
-function launchConfetti() {
-  const colors = ['#ff8bcb', '#ffb648', '#7c6bff', '#4caf50', '#ffd66b', '#6bd4ff'];
-  confettiLayer.innerHTML = '';
-  for (let i = 0; i < 80; i++) {
-    const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    piece.style.left = `${Math.random() * 100}%`;
-    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.animationDuration = `${2 + Math.random() * 2}s`;
-    piece.style.animationDelay = `${Math.random() * 0.5}s`;
-    confettiLayer.appendChild(piece);
-  }
+function fine() {
+  BB.win({
+    emoji: "🏆",
+    titolo: "Hai vinto!",
+    punteggio: "Mosse: " + moves + " · Tempo: " + fmt(seconds),
+    rigioca: function () { startScreen.classList.remove("bb-hidden"); }
+  });
 }
 
-function showWin() {
-  finalMovesEl.textContent = moves;
-  finalTimeEl.textContent = formatTime(secondsElapsed);
-  winOverlay.classList.remove('hidden');
-  launchConfetti();
-  playWinFanfare();
-}
-
-function hideWin() {
-  winOverlay.classList.add('hidden');
-  confettiLayer.innerHTML = '';
-}
-
-function buildBoard() {
-  hideWin();
+function nuova(pairs) {
   stopTimer();
-
-  totalPairs = parseInt(difficultySelect.value === '18' ? 18 : 8, 10);
+  totalPairs = pairs;
   moves = 0;
   matchedCount = 0;
-  flippedCards = [];
+  flipped = [];
   lockBoard = false;
 
-  movesEl.textContent = '0';
-  pairsEl.textContent = `0/${totalPairs}`;
-  timerEl.textContent = '00:00';
+  board.classList.toggle("large", totalPairs > 8);
 
-  board.classList.toggle('large', totalPairs > 8);
+  var chosen = BB.shuffle(CARD_VALUES.slice()).slice(0, totalPairs);
+  var deck = BB.shuffle(chosen.concat(chosen));
 
-  const chosenCards = shuffle(CARD_VALUES).slice(0, totalPairs);
-  const boardCards = shuffle([...chosenCards, ...chosenCards]);
+  board.innerHTML = "";
+  deck.forEach(function (card) { board.appendChild(makeCard(card)); });
 
-  board.innerHTML = '';
-  boardCards.forEach((card, index) => {
-    board.appendChild(createCard(card, index));
-  });
-
+  startScreen.classList.add("bb-hidden");
   startTimer();
 }
 
-restartBtn.addEventListener('click', buildBoard);
-playAgainBtn.addEventListener('click', buildBoard);
-difficultySelect.addEventListener('change', buildBoard);
-
-buildBoard();
-
-// Service worker disattivato nel kiosk: evita cache stale quando aggiorniamo da remoto.
+Array.prototype.forEach.call(document.querySelectorAll(".liv-btn"), function (b) {
+  b.addEventListener("click", function () { nuova(parseInt(b.dataset.pairs, 10)); });
+});
