@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 6,
-  "updatedAt": "2026-08-27T11:03:22.293Z",
+  "configVersion": 7,
+  "updatedAt": "2026-08-28T10:15:37.544Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -137,6 +137,7 @@
       },
       {
         "id": "puzzle",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/puzzle/index.html",
         "displayName": "Rompicapo",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/puzzle.png",
@@ -147,6 +148,7 @@
       },
       {
         "id": "tris",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/tris/index.html",
         "displayName": "Tris",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/tris.png",
@@ -157,6 +159,7 @@
       },
       {
         "id": "hanoi",
+        "package": null,
         "url": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/hanoi/index.html",
         "displayName": "Torre di Hanoi",
         "iconUrl": "https://kevodable.github.io/Fun-Planet-touch/big-ben-giochi/assets/icons/hanoi.png",
@@ -184,9 +187,15 @@
       "sendDeviceHealth": true
     },
     "attract": {
-      "items": [],
-      "enabled": false,
-      "idleSeconds": 60,
+      "items": [
+        {
+          "type": "image",
+          "url": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image4-1787912115062.jpeg",
+          "seconds": 30
+        }
+      ],
+      "enabled": true,
+      "idleSeconds": 30,
       "itemSeconds": 8,
       "muteVideo": true
     },
