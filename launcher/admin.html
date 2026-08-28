@@ -302,9 +302,10 @@
       <h2>10b · Pubblicità (schermo inattività)</h2>
       <p class="hint">
         Dalla schermata giochi, dopo i secondi di inattività indicati, il monitor mostra a tutto
-        schermo un loop di <b>immagini e/o video</b> finché qualcuno tocca lo schermo. Le immagini
-        si caricano qui; i <b>video</b> si indicano via <b>URL</b> (puoi ospitarli su GitHub o su un
-        tuo spazio esterno). ⚠ Video pesanti su GitHub consumano banda: usali brevi e compressi.
+        schermo un loop di <b>immagini e/o video</b> finché qualcuno tocca lo schermo. Puoi
+        <b>caricare qui sia le immagini sia i video .mp4</b> (imposta <i>Tipo: video</i> e premi
+        “Carica video”), oppure incollare un <b>URL</b> esterno. ⚠ I video restano nel repo: tienili
+        <b>brevi, muti e compressi</b> (max ~50–100&nbsp;MB) per non consumare banda.
       </p>
       <label class="inline"><input type="checkbox" id="f-attractEnabled" /> Pubblicità attiva</label>
       <div class="row">
@@ -448,29 +449,39 @@ function pagesUrl(path){
   const o=$("gh-owner").value.trim(), r=$("gh-repo").value.trim();
   return `https://${o.toLowerCase()}.github.io/${r}/${path}`;
 }
-async function uploadImage(file){
+/* Carica un file qualsiasi (immagine o video) in launcher/uploads/ via API GitHub
+   e ritorna l'URL pubblico su GitHub Pages. I video .mp4 vengono così ospitati
+   nel repo (niente link esterni) e il launcher li mette in cache per l'offline.
+   Nota: l'API GitHub accetta file fino a ~100 MB, ma per la pubblicità conviene
+   un clip corto e leggero (muto, bassa risoluzione). */
+async function uploadFile(file){
   if(!$("gh-token").value.trim()) throw new Error("inserisci prima il token GitHub e premi Carica");
-  const ext=(((file.name.split(".").pop())||"png").toLowerCase().replace(/[^a-z0-9]/g,""))||"png";
-  const safe=((file.name.replace(/\.[^.]+$/,"").toLowerCase().replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,""))||"img").slice(0,40);
+  const ext=(((file.name.split(".").pop())||"bin").toLowerCase().replace(/[^a-z0-9]/g,""))||"bin";
+  const safe=((file.name.replace(/\.[^.]+$/,"").toLowerCase().replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,""))||"file").slice(0,40);
   const path=`launcher/uploads/${safe}-${Date.now()}.${ext}`;
   const o=$("gh-owner").value.trim(), r=$("gh-repo").value.trim(), branch=$("gh-branch").value.trim();
   const b64=await fileToB64(file);
   const res=await fetch(`${API}/repos/${o}/${r}/contents/${path}`, { method:"PUT", headers:ghHeaders(),
-    body:JSON.stringify({ message:"Upload immagine "+path+" (da admin)", content:b64, branch }) });
+    body:JSON.stringify({ message:"Upload media "+path+" (da admin)", content:b64, branch }) });
   if(!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()));
   return pagesUrl(path);
 }
-/* Bottone "Carica immagine": carica un file e passa l'URL pubblico a onDone. */
-function uploadButton(onDone, txt){
+const uploadImage = uploadFile; // compatibilità: alias storico
+/* Bottone di upload: carica un file e passa l'URL pubblico a onDone.
+   `txt` e `accept` possono essere stringhe oppure funzioni (valutate al click),
+   così un bottone può alternare immagine/video in base alla scelta corrente. */
+function uploadButton(onDone, txt, accept){
   const wrap=document.createElement("span");
   wrap.style.cssText="display:inline-flex;align-items:center;gap:6px;margin-top:4px";
-  const input=document.createElement("input"); input.type="file"; input.accept="image/*"; input.style.display="none";
-  const btn=document.createElement("button"); btn.type="button"; btn.className="ghost small"; btn.textContent=txt||"⬆ Carica immagine";
-  btn.onclick=()=>input.click();
+  const input=document.createElement("input"); input.type="file"; input.style.display="none";
+  const btn=document.createElement("button"); btn.type="button"; btn.className="ghost small";
+  const label=()=> (typeof txt==="function"?txt():txt) || "⬆ Carica immagine";
+  btn.textContent=label();
+  btn.onclick=()=>{ input.accept=(typeof accept==="function"?accept():accept) || "image/*"; input.click(); };
   input.onchange=async()=>{
     const f=input.files&&input.files[0]; if(!f) return;
     const old=btn.textContent; btn.disabled=true; btn.textContent="⏳ Carico…";
-    try{ const url=await uploadImage(f); onDone(url); btn.textContent="✓ Caricata"; }
+    try{ const url=await uploadFile(f); onDone(url); btn.textContent="✓ Caricato"; }
     catch(e){ alert("Upload fallito: "+e.message); btn.textContent=old; }
     btn.disabled=false; input.value="";
   };
@@ -721,8 +732,15 @@ function renderAttract(){
     const sel=document.createElement("select");
     sel.innerHTML="<option value='image'>immagine</option><option value='video'>video</option>";
     sel.value=(m.type==="video")?"video":"image"; fType.appendChild(sel); fType.__input=sel;
-    const fUrl=fieldInput("URL (immagine, oppure video .mp4)", m.url);
-    fUrl.appendChild(uploadButton(url=>{ fUrl.__input.value=url; refreshPreview(); }, "⬆ Carica immagine"));
+    const fUrl=fieldInput("URL — oppure carica il file (immagine o video .mp4)", m.url);
+    // Il bottone segue il Tipo scelto: carica un'immagine o un video .mp4.
+    const isVideo=()=> sel.value==="video";
+    sel.addEventListener("change", ()=>{ if(sel.value==="video" && !m.type) m.type="video"; });
+    fUrl.appendChild(uploadButton(
+      url=>{ fUrl.__input.value=url; if(isVideo()) sel.value="video"; refreshPreview(); },
+      ()=> isVideo() ? "⬆ Carica video" : "⬆ Carica immagine",
+      ()=> isVideo() ? "video/*" : "image/*"
+    ));
     const fSec=fieldInput("Durata immagine (s, 0=default)", m.seconds ?? 0, {type:"number"});
     r.append(fType,fUrl,fSec); box.appendChild(r);
     box.__get=()=>{
