@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 7,
-  "updatedAt": "2026-08-28T10:15:37.544Z",
+  "configVersion": 8,
+  "updatedAt": "2026-08-28T10:33:44.036Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -196,8 +196,9 @@
       ],
       "enabled": true,
       "idleSeconds": 30,
-      "itemSeconds": 8,
-      "muteVideo": true
+      "itemSeconds": 30,
+      "muteVideo": true,
+      "callToAction": "Tocca lo schermo per giocare"
     },
     "content": {
       "version": 6,
