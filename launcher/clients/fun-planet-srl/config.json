@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 10,
-  "updatedAt": "2026-08-28T10:33:44.036Z",
+  "configVersion": 11,
+  "updatedAt": "2026-08-28T13:22:45.157Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -189,9 +189,9 @@
     "attract": {
       "items": [
         {
-          "type": "image",
-          "url": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/image4-1787912115062.jpeg",
-          "seconds": 30
+          "type": "video",
+          "url": "https://kevodable.github.io/Fun-Planet-touch/launcher/uploads/kids_fun_planet_promo_orizzontale-1787923334130.mp4",
+          "seconds": 10
         }
       ],
       "enabled": true,
