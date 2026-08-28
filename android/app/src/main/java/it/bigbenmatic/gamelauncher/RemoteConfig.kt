@@ -107,6 +107,7 @@ data class AttractConfig(
     val idleSeconds: Int = 60,
     val itemSeconds: Int = 8,
     val muteVideo: Boolean = true,
+    val callToAction: String = "",   // messaggio in sovraimpressione (es. "Tocca lo schermo per giocare")
     val items: List<AttractItem> = emptyList(),
 )
 
@@ -213,6 +214,7 @@ object RemoteConfigParser {
             idleSeconds = o.optInt("idleSeconds", 60),
             itemSeconds = o.optInt("itemSeconds", 8),
             muteVideo = o.optBoolean("muteVideo", true),
+            callToAction = o.optStringOrNull("callToAction") ?: "",
             items = items,
         )
     }
