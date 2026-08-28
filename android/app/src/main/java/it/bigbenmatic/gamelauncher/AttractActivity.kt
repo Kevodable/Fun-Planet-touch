@@ -62,7 +62,40 @@ class AttractActivity : ComponentActivity() {
         items = cfg.items
         muteVideo = cfg.muteVideo
         defaultSeconds = if (cfg.itemSeconds > 0) cfg.itemSeconds else 8
+        addCallToAction(root, cfg.callToAction)
         showCurrent()
+    }
+
+    /** Messaggio in sovraimpressione (es. "Tocca lo schermo per giocare"): visibile ma discreto,
+     *  pillola semitrasparente in basso con una pulsazione morbida. Vuoto = niente messaggio. */
+    private fun addCallToAction(root: FrameLayout, message: String) {
+        val text = message.trim()
+        if (text.isEmpty()) return
+        val dp = { v: Float -> android.util.TypedValue.applyDimension(
+            android.util.TypedValue.COMPLEX_UNIT_DIP, v, resources.displayMetrics).toInt() }
+        val label = android.widget.TextView(this).apply {
+            this.text = text
+            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 22f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setPadding(dp(30f), dp(14f), dp(30f), dp(14f))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = dp(40f).toFloat()
+                setColor(0x8C000000.toInt())   // nero ~55% opaco: leggibile ma non invadente
+            }
+        }
+        val lp = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL,
+        ).apply { bottomMargin = dp(52f) }
+        root.addView(label, lp)   // aggiunto per ultimo → sopra immagine/video
+        val pulse = android.view.animation.AlphaAnimation(0.55f, 1f).apply {
+            duration = 1100
+            repeatMode = android.view.animation.Animation.REVERSE
+            repeatCount = android.view.animation.Animation.INFINITE
+        }
+        label.startAnimation(pulse)
     }
 
     private fun showCurrent() {
