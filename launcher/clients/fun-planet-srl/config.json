@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 11,
-  "updatedAt": "2026-08-28T13:22:45.157Z",
+  "configVersion": 12,
+  "updatedAt": "2026-09-06T12:13:23.142Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -209,6 +209,9 @@
   "devices": {
     "176fe05d-1fa0-4432-bbed-988611332a57": {
       "label": "Monitor 1"
+    },
+    "9a27468b4ff6429db002a6f6490bf2cf": {
+      "label": "Monitor 2"
     }
   }
 }
