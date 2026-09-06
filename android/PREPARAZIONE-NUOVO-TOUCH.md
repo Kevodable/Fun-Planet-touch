@@ -133,9 +133,16 @@ adb shell cmd package set-home-activity it.bigbenmatic.gamelauncher/.MainActivit
 ## 9) Verifica finale
 
 ```bash
-adb shell dpm list-owners                                                   # è Device Owner?
-adb shell dumpsys package it.bigbenmatic.gamelauncher | grep versionCode    # deve essere 13
+# è Device Owner? (cerca la riga "Device Owner: …gamelauncher…")
+adb shell "dumpsys device_policy | grep -i owner"
+# versione installata (deve mostrare versionCode=13)
+adb shell "dumpsys package it.bigbenmatic.gamelauncher | grep versionCode"
 ```
+
+> **🪟 Windows:** `grep` non esiste. Tieni il comando **tra virgolette** come sopra (così
+> `grep` gira dentro il dispositivo — vale anche su Mac/Linux), **oppure** usa `findstr`:
+> `adb shell dumpsys device_policy | findstr /i owner`.
+> Nota: `dpm list-owners` non è supportato da tutti gli Android → usa `dumpsys device_policy`.
 Sul touch: apri un gioco → si apre a tutto schermo; **🏠 Torna ai giochi** riporta
 alla griglia; il tasto Home di sistema è bloccato. ✔︎ Pronto.
 
@@ -164,7 +171,7 @@ alla griglia; il tasto Home di sistema è bloccato. ✔︎ Pronto.
 | `adb devices` | Elenca i dispositivi collegati |
 | `adb install -r file.apk` | Installa/aggiorna il launcher |
 | `adb shell dpm set-device-owner …/.DeviceOwnerReceiver` | Attiva il kiosk (Device Owner) |
-| `adb shell dpm list-owners` | Conferma che è Device Owner |
+| `adb shell "dumpsys device_policy \| grep -i owner"` | Conferma che è Device Owner (Windows: `findstr /i owner`) |
 | `adb tcpip 5555` | Abilita adb via WiFi (via cavo, una volta) |
 | `adb connect IP:5555` | Collega via WiFi |
 | `adb pair IP:PORTA` | Abbina (Debug wireless, Android 11+) |
