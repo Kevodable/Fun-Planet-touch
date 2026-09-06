@@ -63,13 +63,16 @@ il reset è il modo più sicuro per partire senza account e senza residui.
 ## 5) Attiva il debug
 
 In **Opzioni sviluppatore**:
-- **Debug USB** — sempre (serve per il cavo e per avviare il WiFi la prima volta).
-- **Debug wireless** — solo se Android **11+** e vuoi collegarti senza cavo (passo 6, strada B).
+- **Debug USB** — sempre utile (per il cavo, o per avviare il WiFi con il metodo `tcpip`).
+- **ADB di rete / Debug wireless** — per collegarti **senza cavo**. Il nome cambia:
+  sui **monitor/signage** (anche Android 9/10) è spesso un interruttore *"ADB di rete" /
+  "ADB over network"*; su Android **11+** è *"Debug wireless"* con abbinamento a codice.
 
 ## 6) Collega il PC al touch
 
 Scegli una strada. Alla fine `adb devices` deve mostrare il dispositivo come **device**
-(non `unauthorized`).
+(non `unauthorized`). **L'adb via WiFi funziona su tutte le versioni di Android**
+(Android 9 compreso): cambia solo *come* si accende.
 
 **Strada A — via cavo USB (più semplice).** Collega il cavo; sul touch conferma
 **"Consenti debug USB?" → Consenti** (spunta "sempre da questo computer").
@@ -77,22 +80,29 @@ Scegli una strada. Alla fine `adb devices` deve mostrare il dispositivo come **d
 adb devices
 ```
 
-**Strada B — via WiFi (Android 11+, Debug wireless):**
-```bash
-# sul touch: Debug wireless → "Abbina dispositivo con codice"
-#   → mostra IP:PORTA + un codice a 6 cifre
-adb pair 192.168.1.50:37123     # incolla il codice quando richiesto
-adb connect 192.168.1.50:41579  # porta del "Debug wireless" (diversa da quella di pairing)
-```
+**Strada B — via WiFi.** Tre modi, secondo cosa offre il dispositivo:
 
-**WiFi senza Debug wireless (Android 10 o meno)** — serve il cavo una volta sola:
-```bash
-# touch collegato via cavo:
-adb tcpip 5555
-# scollega il cavo, poi (IP del touch da Impostazioni → Info → Stato):
-adb connect 192.168.1.50:5555
-# non conosci l'IP? col cavo attaccato: adb shell ip route
-```
+1. **Interruttore "ADB di rete / ADB over network"** (comune sui monitor, **anche
+   Android 9/10**): attivalo e collegati direttamente, *niente cavo*.
+   ```bash
+   adb connect 192.168.1.50:5555   # IP da Impostazioni → Info → Stato
+   ```
+2. **Android 11+ — "Debug wireless" con codice:**
+   ```bash
+   # sul touch: Debug wireless → "Abbina dispositivo con codice"
+   #   → mostra IP:PORTA + un codice a 6 cifre
+   adb pair 192.168.1.50:37123     # incolla il codice
+   adb connect 192.168.1.50:41579  # porta del Debug wireless (diversa da quella di pairing)
+   ```
+3. **Nessun toggle di rete — metodo `tcpip`** (vale ovunque, anche Android 9): serve
+   il cavo **un solo istante** per dare il via, poi lo stacchi.
+   ```bash
+   # touch collegato via cavo:
+   adb tcpip 5555
+   # scollega il cavo, poi (IP da Impostazioni → Info → Stato):
+   adb connect 192.168.1.50:5555
+   # non conosci l'IP? col cavo attaccato: adb shell ip route
+   ```
 
 ## 7) Installa il launcher e rendilo Device Owner
 
