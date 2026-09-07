@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "routerVersion": 7,
-  "updatedAt": "2026-09-07T10:23:42.791Z",
+  "routerVersion": 8,
+  "updatedAt": "2026-09-07T10:39:13.324Z",
   "_nota": "Router multi-tenant. Mappa ogni UUID device al manifest del suo cliente. 'default' = cliente zero Big Ben Matic (retrocompatibilità: punta all'attuale config.json). I device non elencati in 'devices' usano 'default'.",
   "default": {
     "clientId": "fun-planet-srl",
@@ -21,7 +21,7 @@
     },
     "642e0bf3d658425ebcc2cb45b5ab3db7": {
       "clientId": "fun-planet-srl",
-      "locationId": "Monitor 3 iiyama",
+      "locationId": "Kids fun planet Correggio",
       "manifestUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/clients/fun-planet-srl/config.json"
     }
   },
