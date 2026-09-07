@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".FleetApp"
@@ -71,6 +72,19 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="it.bigbenmatic.gamelauncher.INSTALL_RESULT" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Avvio automatico del launcher all'accensione: necessario sui signage il cui
+             firmware non rispetta l'app Home di Android al boot (es. iiyama Android 8). -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
     </application>
