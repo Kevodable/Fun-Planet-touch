@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 6,
-  "updatedAt": "2026-06-24T10:00:00.000Z",
+  "configVersion": 7,
+  "updatedAt": "2026-09-07T10:20:00.000Z",
   "pollIntervalMinutes": 3,
   "_nota": "Manifest del cliente 'ristorante-demo'. Stesso schema dell'attuale launcher/config.json: defaults + devices[UUID]. Per abilitare/disabilitare un gioco usa 'visible'. Branding e palette sono indipendenti da Big Ben.",
   "defaults": {
@@ -152,7 +152,7 @@
       "wifiNetworks": []
     },
     "update": {
-      "latestVersionCode": 14,
+      "latestVersionCode": 15,
       "apkUrl": "https://kevodable.github.io/Fun-Planet-touch/launcher/apk/launcher-latest.apk",
       "silentInstall": true
     },
