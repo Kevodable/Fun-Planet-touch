@@ -36,12 +36,18 @@ object KioskManager {
         val allowed = (selectedGamePackages + context.packageName).toTypedArray()
         dpm.setLockTaskPackages(adminComponent(context), allowed)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        // setLockTaskFeatures() e le costanti LOCK_TASK_FEATURE_* esistono solo da Android 9
+        // (API 28). Su Android 8.x (es. alcuni monitor signage iiyama) il metodo non esiste e
+        // chiamarlo manda in crash l'app all'avvio: lo saltiamo. Il lock task funziona lo stesso,
+        // solo più restrittivo di default (che per un kiosk va benissimo).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // Block Home/Recents/notifications; allow the power-button global actions menu.
-            dpm.setLockTaskFeatures(
-                adminComponent(context),
-                DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS,
-            )
+            runCatching {
+                dpm.setLockTaskFeatures(
+                    adminComponent(context),
+                    DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS,
+                )
+            }
         }
     }
 
