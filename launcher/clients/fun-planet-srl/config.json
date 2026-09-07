@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "configVersion": 16,
-  "updatedAt": "2026-09-07T10:39:29.486Z",
+  "configVersion": 17,
+  "updatedAt": "2026-09-07T11:00:00.000Z",
   "pollIntervalMinutes": 3,
   "defaults": {
     "branding": {
@@ -213,7 +213,7 @@
     "9a27468b4ff6429db002a6f6490bf2cf": {
       "label": "Monitor 2"
     },
-    "642e0bf3d658425ebcc2cb45b5ab3db7": {
+    "642e0bf3-d658-425e-bcc2-cb45b5ab3db7": {
       "label": "Monitor 3 iiyama"
     }
   }
