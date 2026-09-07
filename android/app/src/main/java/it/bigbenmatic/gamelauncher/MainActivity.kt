@@ -434,14 +434,54 @@ private fun HomeScreen(
                     )
                 }
             } else {
-                val gridCells = if (columns > 0) GridCells.Fixed(columns) else GridCells.Adaptive(minSize = 160.dp)
-                LazyVerticalGrid(
-                    columns = gridCells,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    items(games, key = { it.packageName }) { game ->
-                        GameTile(game = game, showLabel = showLabels, onClick = { onPlay(game) })
+                // Griglia auto-adattiva: misura lo spazio reale disponibile e dimensiona le
+                // tessere per RIEMPIRE tutto lo schermo, su qualsiasi monitor (proporzioni/
+                // risoluzione diverse). Le colonne restano quelle configurate; con columns<=0
+                // vengono scelte in automatico per tessere il più possibile quadrate.
+                val spacing = 16.dp
+                BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    val cols = (if (columns > 0) columns
+                                else autoColumns(games.size, maxWidth / maxHeight))
+                        .coerceIn(1, games.size)
+                    val rows = (games.size + cols - 1) / cols
+                    val cellW = (maxWidth - spacing * (cols - 1)) / cols
+                    val cellH = (maxHeight - spacing * (rows - 1)) / rows
+                    if (cellH >= 96.dp) {
+                        // Riempie l'intera area senza scroll: tessere grandi quanto lo spazio.
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterVertically),
+                        ) {
+                            for (r in 0 until rows) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
+                                ) {
+                                    for (c in 0 until cols) {
+                                        val idx = r * cols + c
+                                        if (idx < games.size) {
+                                            Box(modifier = Modifier.size(cellW, cellH)) {
+                                                GameTile(games[idx], showLabels) { onPlay(games[idx]) }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Troppi giochi per riempire senza rimpicciolire troppo → griglia scrollabile.
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(cols),
+                            horizontalArrangement = Arrangement.spacedBy(spacing),
+                            verticalArrangement = Arrangement.spacedBy(spacing),
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            items(games, key = { it.packageName }) { game ->
+                                Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f)) {
+                                    GameTile(game, showLabels) { onPlay(game) }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -451,49 +491,77 @@ private fun HomeScreen(
 
 @Composable
 private fun GameTile(game: GameApp, showLabel: Boolean, onClick: () -> Unit) {
-    Column(
+    // La tessera riempie lo spazio che le dà il chiamante e si auto-misura: icona ed
+    // etichetta scalano in proporzione, così resta bella su schermi di ogni dimensione.
+    BoxWithConstraints(
         modifier = Modifier
+            .fillMaxSize()
             .clip(RoundedCornerShape(24.dp))
             .background(Color.White)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
+        val minSide = if (maxWidth < maxHeight) maxWidth else maxHeight
+        val iconSize = minSide * (if (showLabel) 0.52f else 0.66f)
+        val labelSp = (minSide.value * 0.13f).coerceIn(13f, 26f)
+
         // Icona: drawable dell'app nativa; per i giochi web carica l'immagine
         // remota (iconUrl) e, se assente, mostra il logo come ripiego.
         var remoteIcon by remember(game.iconUrl) { mutableStateOf<android.graphics.Bitmap?>(null) }
         LaunchedEffect(game.iconUrl) {
             if (game.icon == null && game.iconUrl != null) remoteIcon = RemoteImageLoader.load(game.iconUrl)
         }
-        when {
-            game.icon != null -> AndroidView(
-                factory = { ctx -> ImageView(ctx) },
-                update = { it.setImageDrawable(game.icon) },
-                modifier = Modifier.size(96.dp),
-            )
-            remoteIcon != null -> Image(
-                bitmap = remoteIcon!!.asImageBitmap(),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(96.dp),
-            )
-            else -> Image(
-                painter = painterResource(id = R.drawable.logo_fun_planet),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(96.dp),
-            )
-        }
-        if (showLabel) {
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = game.label,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-            )
+        Column(
+            modifier = Modifier.padding(minSide * 0.08f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            when {
+                game.icon != null -> AndroidView(
+                    factory = { ctx -> ImageView(ctx) },
+                    update = { it.setImageDrawable(game.icon) },
+                    modifier = Modifier.size(iconSize),
+                )
+                remoteIcon != null -> Image(
+                    bitmap = remoteIcon!!.asImageBitmap(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(iconSize),
+                )
+                else -> Image(
+                    painter = painterResource(id = R.drawable.logo_fun_planet),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(iconSize),
+                )
+            }
+            if (showLabel) {
+                Spacer(Modifier.height(minSide * 0.05f))
+                Text(
+                    text = game.label,
+                    fontSize = labelSp.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
+            }
         }
     }
+}
+
+/** Sceglie il numero di colonne per tessere il più possibile quadrate, dato il numero di
+ *  giochi e il rapporto larghezza/altezza dell'area. Usata solo quando columns<=0 (auto). */
+private fun autoColumns(count: Int, aspect: Float): Int {
+    if (count <= 1) return 1
+    var best = 1
+    var bestScore = Float.MAX_VALUE
+    for (c in 1..count) {
+        val r = (count + c - 1) / c
+        val tileAspect = (aspect / c) * r          // ~1 = quadrata
+        val score = kotlin.math.abs(kotlin.math.ln(tileAspect.toDouble())).toFloat()
+        if (score < bestScore) { bestScore = score; best = c }
+    }
+    return best
 }
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
